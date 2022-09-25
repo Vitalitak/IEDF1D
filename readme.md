@@ -1,1 +1,1 @@
-1D Self-consistent Particle-In-Cell simulation model of Ion Energy Distribution Function
+1D Self-consistent Particle-In-Cell (PIC) simulation model of Ion Energy Distribution Function (IEDF)
