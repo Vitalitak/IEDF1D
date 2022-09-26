@@ -44,16 +44,22 @@ def getAcc(pos, Nx, Nh, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w):
     weight_j = (jp1 * dx - pos[0:Nh]) / dx
     weight_jp1 = (pos[0:Nh] - j * dx) / dx
     jp1 = np.mod(jp1, Nx)  # periodic BC
+
     n = np.bincount(j[:, 0], weights=weight_j[:, 0], minlength=Nx);
-    n += np.bincount(jp1[:, 0], weights=weight_jp1[:, 0], minlength=Nx);
+
+    ne_boxsize = np.bincount(jp1[:, 0], weights=weight_jp1[:, 0], minlength=Nx);
+    n += ne_boxsize[0:Nx]
 
     j_i = np.floor(pos[Nh:] / dx).astype(int)
     jp1_i = j_i + 1
     weight_j_i = (jp1_i * dx - pos[Nh:]) / dx
     weight_jp1_i = (pos[Nh:] - j_i * dx) / dx
     jp1_i = np.mod(jp1_i, Nx)  # periodic BC
+
     n -= np.bincount(j_i[:, 0], weights=weight_j_i[:, 0], minlength=Nx);
-    n -= np.bincount(jp1_i[:, 0], weights=weight_jp1_i[:, 0], minlength=Nx);
+
+    ni_boxsize = np.bincount(jp1_i[:, 0], weights=weight_jp1_i[:, 0], minlength=Nx);
+    n -= ni_boxsize[0:Nx]
 
     n *= n0 * boxsize / N / dx
 
