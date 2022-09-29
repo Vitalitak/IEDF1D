@@ -65,11 +65,11 @@ def getAcc(pos, Nx, Nh, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w):
 
     # Solve Poisson's Equation: laplacian(phi) = n-n0
     #phi_Pois_grid = spsolve(Lmtx, n - n0, permc_spec="MMD_AT_PLUS_A")
-    phi_Pois_grid = spsolve(Laptx, n - n0, permc_spec="MMD_AT_PLUS_A")
+    phi_Pois_grid = spsolve(Laptx, n, permc_spec="MMD_AT_PLUS_A")
 
     zerros = []
     zerros = [0 for index in range(Nx)]
-    zerros[Nx-1] = Vrf - Vrf * np.sin(w*t)
+    zerros[Nx-1] = n[Nx-1] - Vrf * np.sin(w*t)
 
     # Solve Laplace's Equation: laplacian(phi) = 0
     phi_Lap_grid = spsolve(Laptx, zerros, permc_spec="MMD_AT_PLUS_A")
@@ -108,7 +108,7 @@ def main():
     Energy_max = 5.0  # max electron energy
     deltaE = 100  # energy discretization
     Vrf = 15  # RF amplitude
-    w = 2 * np.pi * 13.560000  # frequency
+    w = 2 * np.pi * 13560000  # frequency
     plotRealTime = True  # switch on for plotting as the simulation goes along
 
     # Generate Initial Conditions
@@ -181,8 +181,14 @@ def main():
     for i in range(Nt):
         # (1/2) kick
         #vel += acc * dt / 2.0
-        vel[0:Nh] += acc * dt / 2.0 / me
-        vel[Nh:] -= acc * dt / 2.0 / mi
+        for ind in range(N):
+            if (pos[ind] <= boxsize - dx) and (ind < Nh):
+                vel[ind] += acc[int(pos[ind]//dx), 0] * dt / 2.0 / me
+            elif (pos[ind] <= boxsize - dx) and (ind >= Nh):
+                vel[ind] -= acc[int(pos[ind]//dx), 0] * dt / 2.0 / mi
+            else:
+                vel[ind] = 0
+
 
         # drift (and apply periodic boundary conditions)
         pos += vel * dt
@@ -196,8 +202,16 @@ def main():
 
         # (1/2) kick
         #vel += acc * dt / 2.0
-        vel[0:Nh] += acc * dt / 2.0 / me
-        vel[Nh:] -= acc * dt / 2.0 / mi
+        #vel[0:Nh] += acc * dt / 2.0 / me
+        #vel[Nh:] -= acc * dt / 2.0 / mi
+        for ind in range(N):
+            if (pos[ind] <= boxsize - dx) and (ind < Nh):
+                vel[ind] += acc[int(pos[ind]//dx), 0] * dt / 2.0 / me
+            elif (pos[ind] <= boxsize - dx) and (ind >= Nh):
+                vel[ind] -= acc[int(pos[ind]//dx), 0] * dt / 2.0 / mi
+            else:
+                vel[ind] = 0
+
 
         """
         Phase diagram
