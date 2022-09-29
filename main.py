@@ -43,7 +43,7 @@ def getAcc(pos, Nx, Nh, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w):
     jp1 = j + 1
     weight_j = (jp1 * dx - pos[0:Nh]) / dx
     weight_jp1 = (pos[0:Nh] - j * dx) / dx
-    jp1 = np.mod(jp1, Nx)  # periodic BC
+    jp1 = np.mod(jp1, Nx)  # periodic BC #comment here
 
     n = np.bincount(j[:, 0], weights=weight_j[:, 0], minlength=Nx);
 
@@ -54,7 +54,7 @@ def getAcc(pos, Nx, Nh, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w):
     jp1_i = j_i + 1
     weight_j_i = (jp1_i * dx - pos[Nh:]) / dx
     weight_jp1_i = (pos[Nh:] - j_i * dx) / dx
-    jp1_i = np.mod(jp1_i, Nx)  # periodic BC
+    jp1_i = np.mod(jp1_i, Nx)  # periodic BC # comment here
 
     n -= np.bincount(j_i[:, 0], weights=weight_j_i[:, 0], minlength=Nx);
 
@@ -79,7 +79,8 @@ def getAcc(pos, Nx, Nh, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w):
     E_grid = - Gmtx @ (phi_Pois_grid + phi_Lap_grid)
 
     # Interpolate grid value onto particle locations
-    E = weight_j * E_grid[j] + weight_jp1 * E_grid[jp1]
+    #E = weight_j * E_grid[j] + weight_jp1 * E_grid[jp1] # mistake here
+    E = weight_j * E_grid[j] + weight_jp1 * E_grid[jp1] + weight_j_i * E_grid[j_i] + weight_jp1_i * E_grid[jp1_i]
 
     a = -E
 
@@ -90,12 +91,12 @@ def main():
     """ Plasma PIC simulation """
 
     # Simulation parameters
-    N = 100000  # Number of particles
+    N = 100000  # Number of particles. Need 10000000
     Nx = 1000  # Number of mesh cells
     t = 0  # current time of the simulation
     tEnd = 50  # time at which simulation ends
     dt = 1  # timestep
-    boxsize = 100  # periodic domain [0,boxsize]
+    boxsize = 100  # periodic domain [0,boxsize] 100 mkm
     n0 = 1  # electron number density
     #vb = 3  # beam velocity
     vb = 0  # beam velocity
@@ -108,7 +109,7 @@ def main():
     Energy_max = 5.0  # max electron energy
     deltaE = 100  # energy discretization
     Vrf = 15  # RF amplitude
-    w = 2 * np.pi * 13560000  # frequency
+    w = 2 * np.pi * 0.1356  # frequency
     plotRealTime = True  # switch on for plotting as the simulation goes along
 
     # Generate Initial Conditions
