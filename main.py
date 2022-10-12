@@ -44,6 +44,7 @@ def getAcc(pos, Nx, Nh, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w):
     jp1 = j + 1
     weight_j = (jp1 * dx - pos[0:Nh]) / dx
     weight_jp1 = (pos[0:Nh] - j * dx) / dx
+
     jp1[jp1 == Nx] = Nx-1 # particle death
     j[j == Nx-1] = Nx-2
     #jp1 = np.mod(jp1, Nx)  # periodic BC
@@ -57,6 +58,7 @@ def getAcc(pos, Nx, Nh, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w):
     jp1_i = j_i + 1
     weight_j_i = (jp1_i * dx - pos[Nh:]) / dx
     weight_jp1_i = (pos[Nh:] - j_i * dx) / dx
+
     jp1_i[jp1_i == Nx] = Nx-1 # particle death
     j_i[j_i == Nx-1] = Nx - 2
     #jp1_i = np.mod(jp1_i, Nx)  # periodic BC
@@ -213,7 +215,8 @@ def main():
 
         # drift (and apply periodic boundary conditions)
         pos += vel * dt
-        pos = np.mod(pos, boxsize)
+        pos = np.mod(pos, boxsize) # boundary condition
+        #pos[pos > boxsize] = pos - dx
 
         # update time
         t += dt
