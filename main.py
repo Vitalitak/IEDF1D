@@ -14,7 +14,6 @@ using the Particle-In-Cell (PIC) method
 
 """
 
-
 def getAcc(pos, Nx, Nh, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w):
     """
     Calculate the acceleration on each particle due to electric field
@@ -36,6 +35,8 @@ def getAcc(pos, Nx, Nh, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w):
     """
     Charge density, charge mobility
     """
+    me = 1  # electron mass
+    mi = 73000  # ion mass
 
     N = pos.shape[0]
     dx = boxsize / Nx
@@ -43,23 +44,27 @@ def getAcc(pos, Nx, Nh, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w):
     jp1 = j + 1
     weight_j = (jp1 * dx - pos[0:Nh]) / dx
     weight_jp1 = (pos[0:Nh] - j * dx) / dx
-    jp1 = np.mod(jp1, Nx)  # periodic BC #comment here
+    jp1[jp1 == Nx] = Nx-1 # particle death
+    j[j == Nx-1] = Nx-2
+    #jp1 = np.mod(jp1, Nx)  # periodic BC
 
     n = np.bincount(j[:, 0], weights=weight_j[:, 0], minlength=Nx);
 
     ne_boxsize = np.bincount(jp1[:, 0], weights=weight_jp1[:, 0], minlength=Nx);
-    n += ne_boxsize[0:Nx]
+    n += ne_boxsize
 
     j_i = np.floor(pos[Nh:] / dx).astype(int)
     jp1_i = j_i + 1
     weight_j_i = (jp1_i * dx - pos[Nh:]) / dx
     weight_jp1_i = (pos[Nh:] - j_i * dx) / dx
-    jp1_i = np.mod(jp1_i, Nx)  # periodic BC # comment here
+    jp1_i[jp1_i == Nx] = Nx-1 # particle death
+    j_i[j_i == Nx-1] = Nx - 2
+    #jp1_i = np.mod(jp1_i, Nx)  # periodic BC
 
     n -= np.bincount(j_i[:, 0], weights=weight_j_i[:, 0], minlength=Nx);
 
     ni_boxsize = np.bincount(jp1_i[:, 0], weights=weight_jp1_i[:, 0], minlength=Nx);
-    n -= ni_boxsize[0:Nx]
+    n -= ni_boxsize
 
     n *= n0 * boxsize / N / dx
 
@@ -70,6 +75,7 @@ def getAcc(pos, Nx, Nh, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w):
     zerros = []
     zerros = [0 for index in range(Nx)]
     zerros[Nx-1] = n[Nx-1] - Vrf * np.sin(w*t)
+    #zerros[Nx - 1] = Vrf * np.sin(w * t)
 
     # Solve Laplace's Equation: laplacian(phi) = 0
     phi_Lap_grid = spsolve(Laptx, zerros, permc_spec="MMD_AT_PLUS_A")
@@ -80,8 +86,13 @@ def getAcc(pos, Nx, Nh, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w):
 
     # Interpolate grid value onto particle locations
     #E = weight_j * E_grid[j] + weight_jp1 * E_grid[jp1] # mistake here
-    E = weight_j * E_grid[j] + weight_jp1 * E_grid[jp1] + weight_j_i * E_grid[j_i] + weight_jp1_i * E_grid[jp1_i]
+    #E = weight_j * E_grid[j] + weight_jp1 * E_grid[jp1] + weight_j_i * E_grid[j_i] + weight_jp1_i * E_grid[jp1_i]
 
+    Ee = weight_j * E_grid[j] + weight_jp1 * E_grid[jp1]
+    Ei = -weight_j_i * E_grid[j_i] - weight_jp1_i * E_grid[jp1_i]
+    E = np.vstack((Ee / me, Ei / mi))
+
+    #print(f'E.size {E.size},  Ee {Ee.size}')
     a = -E
 
     return a
@@ -91,7 +102,7 @@ def main():
     """ Plasma PIC simulation """
 
     # Simulation parameters
-    N = 100000  # Number of particles. Need 10000000
+    N = 100000  # Number of particles. Need 10 000 000
     Nx = 1000  # Number of mesh cells
     t = 0  # current time of the simulation
     tEnd = 50  # time at which simulation ends
@@ -181,7 +192,8 @@ def main():
     # Simulation Main Loop
     for i in range(Nt):
         # (1/2) kick
-        #vel += acc * dt / 2.0
+        vel += acc * dt / 2.0
+        """
         for ind in range(N):
             if (pos[ind] <= boxsize - dx) and (ind < Nh):
                 vel[ind] += acc[int(pos[ind]//dx), 0] * dt / 2.0 / me
@@ -189,6 +201,14 @@ def main():
                 vel[ind] -= acc[int(pos[ind]//dx), 0] * dt / 2.0 / mi
             else:
                 vel[ind] = 0
+        """
+        """
+        for ind in range(N):
+            if (pos[ind] <= boxsize - dx) :
+                vel += acc * dt / 2.0
+            else:
+                vel[ind] = 0
+        """
 
 
         # drift (and apply periodic boundary conditions)
@@ -202,9 +222,9 @@ def main():
         acc = getAcc(pos, Nx, Nh, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w)
 
         # (1/2) kick
-        #vel += acc * dt / 2.0
-        #vel[0:Nh] += acc * dt / 2.0 / me
-        #vel[Nh:] -= acc * dt / 2.0 / mi
+        vel += acc * dt / 2.0
+
+        """
         for ind in range(N):
             if (pos[ind] <= boxsize - dx) and (ind < Nh):
                 vel[ind] += acc[int(pos[ind]//dx), 0] * dt / 2.0 / me
@@ -212,7 +232,14 @@ def main():
                 vel[ind] -= acc[int(pos[ind]//dx), 0] * dt / 2.0 / mi
             else:
                 vel[ind] = 0
-
+        """
+        """
+        for ind in range(N):
+            if (pos[ind] <= boxsize - dx) :
+                vel += acc * dt / 2.0
+            else:
+                vel[ind] = 0
+        """
 
         """
         Phase diagram
@@ -240,7 +267,7 @@ def main():
     dE = Energy_max / deltaE
 
     for ind in range(Nh, N):
-        if (pos[ind] >= boxsize - 100 * dx) and (vel[ind] > 0):
+        if (pos[ind] >= boxsize - 3 * dx) and (vel[ind] > 0):
             k = int(energy[ind] // dE)
             if k < deltaE:
                 iedf[k] += 1
