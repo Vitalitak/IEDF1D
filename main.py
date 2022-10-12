@@ -221,6 +221,7 @@ def main():
         pos += vel * dt
         #pos = np.mod(pos, boxsize) # boundary condition
         pos[pos >= boxsize] = boxsize - 0.5*dx
+        pos[pos <= 0] = 0.5*dx
 
         # update time
         t += dt
