@@ -14,7 +14,7 @@ using the Particle-In-Cell (PIC) method
 
 """
 
-def getAcc(pos_e, pos_i, Nx, Nh, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w):
+def getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w):
     """
     Calculate the acceleration on each particle due to electric field
     pos      is an Nx1 matrix of particle positions
@@ -185,7 +185,7 @@ def main():
     Laptx = sp.csr_matrix(Laptx)
 
     # calculate initial gravitational accelerations
-    acc_e, acc_i = getAcc(pos_e, pos_i, Nx, Nh, boxsize, n0, Gmtx, Lmtx, Laptx, 0, Vrf, w)
+    acc_e, acc_i = getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Lmtx, Laptx, 0, Vrf, w)
 
     # number of timesteps
     Nt = int(np.ceil(tEnd / dt))
@@ -221,17 +221,17 @@ def main():
         pos_i += vel_i * dt
 
         #pos = np.mod(pos, boxsize) # periodic boundary condition
-        pos_e[pos_e >= boxsize] = boxsize - 0.5*dx
-        pos_e[pos_e <= 0] = 0.5*dx
-        pos_i[pos_i >= boxsize] = boxsize - 0.5 * dx
+
+        pos_e[pos_e >= boxsize] = boxsize - 0.5 * dx # particle death
+        pos_e[pos_e <= 0] = 0.5 * dx
+        pos_i[pos_i >= boxsize] = boxsize - 0.5 * dx # particle death
         pos_i[pos_i <= 0] = 0.5 * dx
-        #Nh = Nh-1 #Nh determine
 
         # update time
         t += dt
 
         # update accelerations
-        acc_e, acc_i = getAcc(pos_e, pos_i, Nx, Nh, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w)
+        acc_e, acc_i = getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w)
 
         # (1/2) kick
         vel_e += acc_e * dt / 2.0
