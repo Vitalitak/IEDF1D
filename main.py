@@ -136,20 +136,18 @@ def main():
 
     Nh = int(N / 2)
 
+    # Particle creation: position and velocity
     pos_e = np.random.rand(Nh, 1) * boxsize
     pos_i = np.random.rand(N-Nh, 1) * boxsize
     pos = np.vstack((pos_e, pos_i))
 
-
     vel_e = vth / m.sqrt(Te) * np.random.normal(0, m.sqrt(Te), size = (Nh, 1))
     vel_i = vth / m.sqrt(Ti) * np.random.normal(0, m.sqrt(Ti), size = (N-Nh, 1))
-
     #vel_el = vth * np.random.normal(0, m.sqrt(Te), size=(Nh, 1))
     #vel_ions = vth * np.random.normal(0, m.sqrt(Ti), size=(N - Nh, 1))
-
     vel = np.vstack((vel_e, vel_i))
 
-    # Construct matrix G to computer Gradient  (1st derivative)
+    # Construct matrix G to computer Gradient  (1st derivative) (BOUNDARY CONDITIONS)
     dx = boxsize / Nx
     e = np.ones(Nx)
     diags = np.array([-1, 1])
@@ -171,12 +169,13 @@ def main():
     Lmtx /= dx ** 2
     Lmtx = sp.csr_matrix(Lmtx)
 
-    # Construct matrix L to computer Laplacian (2nd derivative) for Laplace
+    # Construct matrix L to computer Laplacian (2nd derivative) for Laplace (BOUNDARY CONDITIONS)
     #diags = np.array([-1, 0, 1])
     diags = np.array([0, 1, 2])
     vals = np.vstack((e, -2 * e, e))
     Laptx = sp.spdiags(vals, diags, Nx, Nx);
     Laptx = sp.lil_matrix(Laptx)
+    #Laptx[0, 0] = 1
     #Laptx[0, Nx - 1] = 0
     #Laptx[Nx - 1, 0] = 0
     #Laptx[Nx - 1, Nx - 2] = 0
