@@ -96,12 +96,12 @@ def getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w):
     #E = weight_j * E_grid[j] + weight_jp1 * E_grid[jp1] + weight_j_i * E_grid[j_i] + weight_jp1_i * E_grid[jp1_i]
 
     Ee = weight_j * E_grid[j] + weight_jp1 * E_grid[jp1]
-    Ei = -weight_j_i * E_grid[j_i] - weight_jp1_i * E_grid[jp1_i]
+    Ei = weight_j_i * E_grid[j_i] + weight_jp1_i * E_grid[jp1_i]
     #E = np.vstack((Ee / me, Ei / mi))
 
     #print(f'E.size {E.size},  Ee {Ee.size}')
     ae = -Ee / me
-    ai = -Ei / mi
+    ai = Ei / mi
 
     return ae, ai
 
@@ -223,9 +223,18 @@ def main():
         #pos = np.mod(pos, boxsize) # periodic boundary condition
 
         pos_e[pos_e >= boxsize] = boxsize - 0.5 * dx # particle death
-        pos_e[pos_e <= 0] = 0.5 * dx
+        be = np.where(pos_e <= 0)
+        pos_e = np.delete(pos_e, be[0], axis = 0)
+        vel_e = np.delete(vel_e, be[0], axis = 0)
+        acc_e = np.delete(acc_e, be[0], axis = 0)
+
         pos_i[pos_i >= boxsize] = boxsize - 0.5 * dx # particle death
-        pos_i[pos_i <= 0] = 0.5 * dx
+        bi = np.where(pos_i <= 0)
+        # bi = pos_i <= 0
+        #obji = bi.astype(int)
+        pos_i = np.delete(pos_i, bi[0], axis = 0)
+        vel_i = np.delete(vel_i, bi[0], axis=0)
+        acc_i = np.delete(acc_i, bi[0], axis=0)
 
         # update time
         t += dt
