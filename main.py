@@ -14,7 +14,7 @@ using the Particle-In-Cell (PIC) method
 
 """
 
-def getAcc(pos, Nx, Nh, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w):
+def getAcc(pos_e, pos_i, Nx, Nh, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w):
     """
     Calculate the acceleration on each particle due to electric field
     pos      is an Nx1 matrix of particle positions
@@ -37,13 +37,14 @@ def getAcc(pos, Nx, Nh, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w):
     """
     me = 1  # electron mass
     mi = 73000  # ion mass
+    pos = np.vstack((pos_e, pos_i))
 
     N = pos.shape[0]
     dx = boxsize / Nx
-    j = np.floor(pos[0:Nh] / dx).astype(int)
+    j = np.floor(pos_e / dx).astype(int)
     jp1 = j + 1
-    weight_j = (jp1 * dx - pos[0:Nh]) / dx
-    weight_jp1 = (pos[0:Nh] - j * dx) / dx
+    weight_j = (jp1 * dx - pos_e) / dx
+    weight_jp1 = (pos_e - j * dx) / dx
 
     jp1[jp1 == Nx] = Nx-1 # particle death
     j[j == Nx-1] = Nx-2
@@ -56,10 +57,10 @@ def getAcc(pos, Nx, Nh, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w):
     ne_boxsize = np.bincount(jp1[:, 0], weights=weight_jp1[:, 0], minlength=Nx);
     n += ne_boxsize
 
-    j_i = np.floor(pos[Nh:] / dx).astype(int)
+    j_i = np.floor(pos_i / dx).astype(int)
     jp1_i = j_i + 1
-    weight_j_i = (jp1_i * dx - pos[Nh:]) / dx
-    weight_jp1_i = (pos[Nh:] - j_i * dx) / dx
+    weight_j_i = (jp1_i * dx - pos_i) / dx
+    weight_jp1_i = (pos_i - j_i * dx) / dx
 
     jp1_i[jp1_i == Nx] = Nx-1 # particle death
     j_i[j_i == Nx-1] = Nx - 2
@@ -96,12 +97,13 @@ def getAcc(pos, Nx, Nh, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w):
 
     Ee = weight_j * E_grid[j] + weight_jp1 * E_grid[jp1]
     Ei = -weight_j_i * E_grid[j_i] - weight_jp1_i * E_grid[jp1_i]
-    E = np.vstack((Ee / me, Ei / mi))
+    #E = np.vstack((Ee / me, Ei / mi))
 
     #print(f'E.size {E.size},  Ee {Ee.size}')
-    a = -E
+    ae = -Ee / me
+    ai = -Ei / mi
 
-    return a
+    return ae, ai
 
 
 def main():
@@ -132,24 +134,20 @@ def main():
     # Generate Initial Conditions
     np.random.seed(42)  # set the random number generator seed
 
-    pos = np.random.rand(N, 1) * boxsize
-    """
-    vel = vth * np.random.randn(N, 1) + vb
-    Nh = int(N / 2)
-    vel[Nh:] *= -1
-    """
     Nh = int(N / 2)
 
-    vel_el = vth / m.sqrt(Te) * np.random.normal(0, m.sqrt(Te), size = (Nh, 1))
-    vel_ions = vth / m.sqrt(Ti) * np.random.normal(0, m.sqrt(Ti), size = (N-Nh, 1))
+    pos_e = np.random.rand(Nh, 1) * boxsize
+    pos_i = np.random.rand(N-Nh, 1) * boxsize
+    pos = np.vstack((pos_e, pos_i))
+
+
+    vel_e = vth / m.sqrt(Te) * np.random.normal(0, m.sqrt(Te), size = (Nh, 1))
+    vel_i = vth / m.sqrt(Ti) * np.random.normal(0, m.sqrt(Ti), size = (N-Nh, 1))
 
     #vel_el = vth * np.random.normal(0, m.sqrt(Te), size=(Nh, 1))
     #vel_ions = vth * np.random.normal(0, m.sqrt(Ti), size=(N - Nh, 1))
 
-    vel = np.vstack((vel_el, vel_ions))
-
-    # add perturbation
-    #vel *= (1 + A * np.sin(2 * np.pi * pos / boxsize))
+    vel = np.vstack((vel_e, vel_i))
 
     # Construct matrix G to computer Gradient  (1st derivative)
     dx = boxsize / Nx
@@ -187,7 +185,7 @@ def main():
     Laptx = sp.csr_matrix(Laptx)
 
     # calculate initial gravitational accelerations
-    acc = getAcc(pos, Nx, Nh, boxsize, n0, Gmtx, Lmtx, Laptx, 0, Vrf, w)
+    acc_e, acc_i = getAcc(pos_e, pos_i, Nx, Nh, boxsize, n0, Gmtx, Lmtx, Laptx, 0, Vrf, w)
 
     # number of timesteps
     Nt = int(np.ceil(tEnd / dt))
@@ -198,7 +196,8 @@ def main():
     # Simulation Main Loop
     for i in range(Nt):
         # (1/2) kick
-        vel += acc * dt / 2.0
+        vel_e += acc_e * dt / 2.0
+        vel_i += acc_i * dt / 2.0
         """
         for ind in range(N):
             if (pos[ind] <= boxsize - dx) and (ind < Nh):
@@ -217,20 +216,26 @@ def main():
         """
 
 
-        # drift (and apply periodic boundary conditions)
-        pos += vel * dt
-        #pos = np.mod(pos, boxsize) # boundary condition
-        pos[pos >= boxsize] = boxsize - 0.5*dx
-        pos[pos <= 0] = 0.5*dx
+        # drift (and apply boundary conditions)
+        pos_e += vel_e * dt
+        pos_i += vel_i * dt
+
+        #pos = np.mod(pos, boxsize) # periodic boundary condition
+        pos_e[pos_e >= boxsize] = boxsize - 0.5*dx
+        pos_e[pos_e <= 0] = 0.5*dx
+        pos_i[pos_i >= boxsize] = boxsize - 0.5 * dx
+        pos_i[pos_i <= 0] = 0.5 * dx
+        #Nh = Nh-1 #Nh determine
 
         # update time
         t += dt
 
         # update accelerations
-        acc = getAcc(pos, Nx, Nh, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w)
+        acc_e, acc_i = getAcc(pos_e, pos_i, Nx, Nh, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w)
 
         # (1/2) kick
-        vel += acc * dt / 2.0
+        vel_e += acc_e * dt / 2.0
+        vel_i += acc_i * dt / 2.0
 
         """
         for ind in range(N):
@@ -255,8 +260,8 @@ def main():
         # plot in real time - color 1/2 particles blue, other half red
         if plotRealTime or (i == Nt - 1):
             plt.cla()
-            plt.scatter(pos[0:Nh], vel[0:Nh], s=.4, color='blue', alpha=0.5)
-            plt.scatter(pos[Nh:], vel[Nh:], s=.4, color='red', alpha=0.5)
+            plt.scatter(pos_e, vel_e, s=.4, color='blue', alpha=0.5)
+            plt.scatter(pos_i, vel_i, s=.4, color='red', alpha=0.5)
             plt.axis([0, boxsize, -10, 10])
 
             plt.pause(0.001)
