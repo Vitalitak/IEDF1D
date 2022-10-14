@@ -81,7 +81,7 @@ def getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w):
     zerros = []
     zerros = [0 for index in range(Nx)]
     zerros[Nx-1] = n[Nx-1] - Vrf * np.sin(w*t)
-    #zerros[Nx - 1] = Vrf * np.sin(w * t)
+    #zerros[Nx - 1] = 0.1*Vrf + Vrf * np.sin(w * t)
 
     # Solve Laplace's Equation: laplacian(phi) = 0
     phi_Lap_grid = spsolve(Laptx, zerros, permc_spec="MMD_AT_PLUS_A")
@@ -92,13 +92,10 @@ def getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w):
 
     # Interpolate grid value onto particle locations
     #E = weight_j * E_grid[j] + weight_jp1 * E_grid[jp1] # mistake here
-    #E = weight_j * E_grid[j] + weight_jp1 * E_grid[jp1] + weight_j_i * E_grid[j_i] + weight_jp1_i * E_grid[jp1_i]
 
     Ee = weight_j * E_grid[j] + weight_jp1 * E_grid[jp1]
     Ei = weight_j_i * E_grid[j_i] + weight_jp1_i * E_grid[jp1_i]
-    #E = np.vstack((Ee / me, Ei / mi))
 
-    #print(f'E.size {E.size},  Ee {Ee.size}')
     ae = -Ee / me
     ai = Ei / mi
 
@@ -298,7 +295,7 @@ def main():
     plt.ylabel('v')
     plt.savefig('pic.png', dpi=240)
     plt.show()
-
+    
     """
     # Electron energy distribution function
     energy = vel ** 2 / 2.0
@@ -306,8 +303,8 @@ def main():
     iedf = [0 for index in range(deltaE)]
     dE = Energy_max / deltaE
 
-    for ind in range(Nh, N):
-        if (pos[ind] >= boxsize - 3 * dx) and (vel[ind] > 0):
+    for ind in range(pos_i.shape[0]):
+        if (pos_i[ind] >= boxsize - dx) and (vel_i[ind] > 0):
             k = int(energy[ind] // dE)
             if k < deltaE:
                 iedf[k] += 1
