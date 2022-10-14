@@ -39,7 +39,8 @@ def getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w):
     mi = 73000  # ion mass
     pos = np.vstack((pos_e, pos_i))
 
-    N = pos.shape[0]
+    #N = pos_i.shape[0] - pos_e.shape[0]
+    N = pos_i.shape[0]
     dx = boxsize / Nx
     j = np.floor(pos_e / dx).astype(int)
     jp1 = j + 1
@@ -64,8 +65,6 @@ def getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w):
 
     jp1_i[jp1_i == Nx] = Nx-1 # particle death
     j_i[j_i == Nx-1] = Nx - 2
-    #jp1_i[jp1_i == 0] = 1  # particle death
-    #j_i[j_i == -1] = 0
     #jp1_i = np.mod(jp1_i, Nx)  # periodic BC
 
     n -= np.bincount(j_i[:, 0], weights=weight_j_i[:, 0], minlength=Nx);
@@ -110,11 +109,11 @@ def main():
     """ Plasma PIC simulation """
 
     # Simulation parameters
-    N = 100000  # Number of particles. Need 10 000 000
-    Nx = 1000  # Number of mesh cells
+    N = 500000  # Number of particles. Need 10 000 000
+    Nx = 2000  # Number of mesh cells
     t = 0  # current time of the simulation
-    tEnd = 50  # time at which simulation ends
-    dt = 1  # timestep
+    tEnd = 50  # time at which simulation ends [mks]
+    dt = 1  # timestep 1mks
     boxsize = 100  # periodic domain [0,boxsize] 100 mkm
     n0 = 1  # electron number density
     #vb = 3  # beam velocity
@@ -154,8 +153,12 @@ def main():
     vals = np.vstack((-e, e))
     Gmtx = sp.spdiags(vals, diags, Nx, Nx);
     Gmtx = sp.lil_matrix(Gmtx)
-    Gmtx[0, Nx - 1] = -1
-    Gmtx[Nx - 1, 0] = 1
+    #Gmtx[0, Nx - 1] = -1
+    #Gmtx[Nx - 1, 0] = 1
+    Gmtx[0, 0] = -2
+    Gmtx[0, 1] = 2
+    Gmtx[Nx - 1, Nx - 1] = 2
+    Gmtx[Nx - 1, Nx - 2] = -2
     Gmtx /= (2 * dx)
     Gmtx = sp.csr_matrix(Gmtx)
 
@@ -170,16 +173,16 @@ def main():
     Lmtx = sp.csr_matrix(Lmtx)
 
     # Construct matrix L to computer Laplacian (2nd derivative) for Laplace (BOUNDARY CONDITIONS)
-    #diags = np.array([-1, 0, 1])
-    diags = np.array([0, 1, 2])
+    diags = np.array([-1, 0, 1])
+    #diags = np.array([0, 1, 2])
     vals = np.vstack((e, -2 * e, e))
     Laptx = sp.spdiags(vals, diags, Nx, Nx);
     Laptx = sp.lil_matrix(Laptx)
-    #Laptx[0, 0] = 1
+    Laptx[0, 0] = 1
     #Laptx[0, Nx - 1] = 0
     #Laptx[Nx - 1, 0] = 0
     #Laptx[Nx - 1, Nx - 2] = 0
-    #Laptx[Nx - 1, Nx - 1] = 1
+    Laptx[Nx - 1, Nx - 1] = 1
     Laptx /= dx ** 2
     Laptx = sp.csr_matrix(Laptx)
 
@@ -215,10 +218,11 @@ def main():
         """
 
 
-        # drift (and apply boundary conditions)
+        # drift
         pos_e += vel_e * dt
         pos_i += vel_i * dt
 
+        # boundary condition and particle death
         #pos = np.mod(pos, boxsize) # periodic boundary condition
 
         pos_e[pos_e >= boxsize] = boxsize - 0.5 * dx # particle death
@@ -229,8 +233,6 @@ def main():
 
         pos_i[pos_i >= boxsize] = boxsize - 0.5 * dx # particle death
         bi = np.where(pos_i <= 0)
-        # bi = pos_i <= 0
-        #obji = bi.astype(int)
         pos_i = np.delete(pos_i, bi[0], axis = 0)
         vel_i = np.delete(vel_i, bi[0], axis=0)
         acc_i = np.delete(acc_i, bi[0], axis=0)
