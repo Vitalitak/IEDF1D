@@ -48,8 +48,8 @@ def getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w):
 
     jp1[jp1 == Nx] = Nx-1 # particle death
     j[j == Nx-1] = Nx-2
-    jp1[jp1 == 0] = 1  # particle death
-    j[j == -1] = 0
+    #jp1[jp1 == 0] = 1  # particle death
+    #j[j == -1] = 0
     #jp1 = np.mod(jp1, Nx)  # periodic BC
 
     n = np.bincount(j[:, 0], weights=weight_j[:, 0], minlength=Nx);
@@ -64,8 +64,8 @@ def getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w):
 
     jp1_i[jp1_i == Nx] = Nx-1 # particle death
     j_i[j_i == Nx-1] = Nx - 2
-    jp1_i[jp1_i == 0] = 1  # particle death
-    j_i[j_i == -1] = 0
+    #jp1_i[jp1_i == 0] = 1  # particle death
+    #j_i[j_i == -1] = 0
     #jp1_i = np.mod(jp1_i, Nx)  # periodic BC
 
     n -= np.bincount(j_i[:, 0], weights=weight_j_i[:, 0], minlength=Nx);
@@ -128,7 +128,7 @@ def main():
     Energy_max = 5.0  # max electron energy
     deltaE = 100  # energy discretization
     Vrf = 15  # RF amplitude
-    w = 2 * np.pi * 0.1356  # frequency
+    w = 2 * np.pi * 13.560000  # frequency
     plotRealTime = True  # switch on for plotting as the simulation goes along
 
     # Generate Initial Conditions
@@ -238,12 +238,29 @@ def main():
         # update time
         t += dt
 
+        # particle generation
+        dNef = Nh * m.sqrt(3 * Te) / 4 / boxsize / m.sqrt(me)
+        dNe = int(dNef)
+        dNif = (N - Nh) * m.sqrt(3 * Ti) / 4 / boxsize / m.sqrt(mi)
+        dNi = int(dNif)
+
+        dpos_e = np.zeros((dNe, 1))
+        dpos_i = np.zeros((dNi, 1))
+        pos_e = np.vstack((pos_e, dpos_e))
+        pos_i = np.vstack((pos_i, dpos_i))
+
+        dvel_e = vth / m.sqrt(Te) * np.random.normal(0, m.sqrt(Te), size=(dNe, 1))
+        dvel_i = vth / m.sqrt(Ti) * np.random.normal(0, m.sqrt(Ti), size=(dNi, 1))
+        vel_e = np.vstack((vel_e, dvel_e))
+        vel_i = np.vstack((vel_i, dvel_i))
+
         # update accelerations
         acc_e, acc_i = getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w)
 
         # (1/2) kick
         vel_e += acc_e * dt / 2.0
         vel_i += acc_i * dt / 2.0
+
 
         """
         for ind in range(N):
