@@ -135,10 +135,10 @@ def main():
     pos_i = np.random.rand(N-Nh, 1) * boxsize
     pos = np.vstack((pos_e, pos_i))
 
-    vel_e = vth / m.sqrt(Te) * np.random.normal(0, m.sqrt(Te), size = (Nh, 1))
-    vel_i = vth / m.sqrt(Ti) * np.random.normal(0, m.sqrt(Ti), size = (N-Nh, 1))
-    #vel_el = vth * np.random.normal(0, m.sqrt(Te), size=(Nh, 1))
-    #vel_ions = vth * np.random.normal(0, m.sqrt(Ti), size=(N - Nh, 1))
+    #vel_e = vth / m.sqrt(Te) * np.random.normal(0, m.sqrt(Te), size = (Nh, 1))
+    #vel_i = vth / m.sqrt(Ti) * np.random.normal(0, m.sqrt(Ti), size = (N-Nh, 1))
+    vel_e = vth * np.random.normal(0, m.sqrt(Te), size=(Nh, 1))
+    vel_i = vth * np.random.normal(0, m.sqrt(Ti), size=(N - Nh, 1))
     vel = np.vstack((vel_e, vel_i))
 
     # Construct matrix G to computer Gradient  (1st derivative) (BOUNDARY CONDITIONS)
@@ -254,8 +254,10 @@ def main():
         pos_e = np.vstack((pos_e, dpos_e))
         pos_i = np.vstack((pos_i, dpos_i))
 
-        dvel_e = vth / m.sqrt(Te) * np.random.normal(0, m.sqrt(Te), size=(dNe, 1))
-        dvel_i = vth / m.sqrt(Ti) * np.random.normal(0, m.sqrt(Ti), size=(dNi, 1))
+        #dvel_e = vth / m.sqrt(Te) * np.random.normal(0, m.sqrt(Te), size=(dNe, 1))
+        #dvel_i = vth / m.sqrt(Ti) * np.random.normal(0, m.sqrt(Ti), size=(dNi, 1))
+        dvel_e = vth * np.random.normal(0, m.sqrt(Te), size=(dNe, 1))
+        dvel_i = vth * np.random.normal(0, m.sqrt(Ti), size=(dNi, 1))
         vel_e = np.vstack((vel_e, dvel_e))
         vel_i = np.vstack((vel_i, dvel_i))
 
