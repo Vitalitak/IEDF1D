@@ -74,14 +74,14 @@ def getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w):
 
     n *= n0 * boxsize / N / dx
 
-    # Solve Poisson's Equation: laplacian(phi) = n-n0
+    # Solve Poisson's Equation: laplacian(phi) = n
     #phi_Pois_grid = spsolve(Lmtx, n - n0, permc_spec="MMD_AT_PLUS_A")
     phi_Pois_grid = spsolve(Laptx, n, permc_spec="MMD_AT_PLUS_A")
 
     zerros = []
     zerros = [0 for index in range(Nx)]
-    zerros[Nx-1] = n[Nx-1] - Vrf * np.sin(w*t)
-    #zerros[Nx - 1] = 0.1*Vrf + Vrf * np.sin(w * t)
+    #zerros[Nx-1] = n[Nx-1] - Vrf * np.sin(w*t)
+    zerros[Nx - 1] = Vrf * np.sin(w * t)
 
     # Solve Laplace's Equation: laplacian(phi) = 0
     phi_Lap_grid = spsolve(Laptx, zerros, permc_spec="MMD_AT_PLUS_A")
@@ -106,17 +106,15 @@ def main():
     """ Plasma PIC simulation """
 
     # Simulation parameters
-    N = 500000  # Number of particles. Need 10 000 000
+    N = 1000000  # Number of particles. Need 10 000 000
     Nx = 2000  # Number of mesh cells
     t = 0  # current time of the simulation
     tEnd = 50  # time at which simulation ends [mks]
     dt = 1  # timestep 1mks
     boxsize = 100  # periodic domain [0,boxsize] 100 mkm
     n0 = 1  # electron number density
-    #vb = 3  # beam velocity
     vb = 0  # beam velocity
     vth = 1  # beam width
-    #A = 0.1  # perturbation
     Te = 2.3  # electron temperature
     Ti = 0.06  # ion temperature
     me = 1 # electron mass
@@ -222,13 +220,21 @@ def main():
         # boundary condition and particle death
         #pos = np.mod(pos, boxsize) # periodic boundary condition
 
-        pos_e[pos_e >= boxsize] = boxsize - 0.5 * dx # particle death
+        #pos_e[pos_e >= boxsize] = boxsize - 0.5 * dx # particle death
+        be_b = np.where(pos_e >= boxsize)
+        pos_e = np.delete(pos_e, be_b[0], axis=0)
+        vel_e = np.delete(vel_e, be_b[0], axis=0)
+        acc_e = np.delete(acc_e, be_b[0], axis=0)
         be = np.where(pos_e <= 0)
         pos_e = np.delete(pos_e, be[0], axis = 0)
         vel_e = np.delete(vel_e, be[0], axis = 0)
         acc_e = np.delete(acc_e, be[0], axis = 0)
 
-        pos_i[pos_i >= boxsize] = boxsize - 0.5 * dx # particle death
+        #pos_i[pos_i >= boxsize] = boxsize - 0.5 * dx # particle death
+        bi_b = np.where(pos_i >= boxsize)
+        pos_i = np.delete(pos_i, bi_b[0], axis=0)
+        vel_i = np.delete(vel_i, bi_b[0], axis=0)
+        acc_i = np.delete(acc_i, bi_b[0], axis=0)
         bi = np.where(pos_i <= 0)
         pos_i = np.delete(pos_i, bi[0], axis = 0)
         vel_i = np.delete(vel_i, bi[0], axis=0)
@@ -304,7 +310,7 @@ def main():
     dE = Energy_max / deltaE
 
     for ind in range(pos_i.shape[0]):
-        if (pos_i[ind] >= boxsize - dx) and (vel_i[ind] > 0):
+        if (pos_i[ind] >= boxsize - 3*dx) and (vel_i[ind] > 0):
             k = int(energy[ind] // dE)
             if k < deltaE:
                 iedf[k] += 1
