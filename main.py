@@ -14,7 +14,7 @@ using the Particle-In-Cell (PIC) method
 
 """
 
-def getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w):
+def getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w, Vdc):
     """
     Calculate the acceleration on each particle due to electric field
     pos      is an Nx1 matrix of particle positions
@@ -67,14 +67,14 @@ def getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w):
 
     n *= n0 * boxsize / N / dx
 
-    # Solve Poisson's Equation: laplacian(phi) = n
+    # Solve Poisson's Equation: laplacian(phi) = -n
     #phi_Pois_grid = spsolve(Lmtx, n - n0, permc_spec="MMD_AT_PLUS_A")
-    phi_Pois_grid = spsolve(Laptx, n, permc_spec="MMD_AT_PLUS_A")
+    phi_Pois_grid = spsolve(Laptx, -n, permc_spec="MMD_AT_PLUS_A")
 
     zerros = []
     zerros = [0 for index in range(Nx)]
     #zerros[Nx-1] = n[Nx-1] - Vrf * np.sin(w*t)
-    zerros[Nx - 1] = 0.01*Vrf - Vrf * np.sin(w * t)
+    zerros[Nx - 1] = Vdc - Vrf * np.sin(w * t)
 
     # Solve Laplace's Equation: laplacian(phi) = 0
     phi_Lap_grid = spsolve(Laptx, zerros, permc_spec="MMD_AT_PLUS_A")
@@ -102,7 +102,7 @@ def main():
     N = 1000000  # Number of particles. Need 10 000 000
     Nx = 2000  # Number of mesh cells
     t = 0  # current time of the simulation
-    tEnd = 50  # time at which simulation ends [mks]
+    tEnd = 80  # time at which simulation ends [mks]
     dt = 1  # timestep 1mks
     boxsize = 100  # periodic domain [0,boxsize] 100 mkm
     n0 = 1  # electron number density
@@ -175,7 +175,7 @@ def main():
     Laptx = sp.csr_matrix(Laptx)
 
     # calculate initial gravitational accelerations
-    acc_e, acc_i = getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Lmtx, Laptx, 0, Vrf, w)
+    acc_e, acc_i = getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Lmtx, Laptx, 0, Vrf, w, 0)
 
     # number of timesteps
     Nt = int(np.ceil(tEnd / dt))
@@ -215,6 +215,7 @@ def main():
 
         #pos_e[pos_e >= boxsize] = boxsize - 0.5 * dx # particle death
         be_b = np.where(pos_e >= boxsize)
+        I = -len(be_b[0])
         pos_e = np.delete(pos_e, be_b[0], axis=0)
         vel_e = np.delete(vel_e, be_b[0], axis=0)
         acc_e = np.delete(acc_e, be_b[0], axis=0)
@@ -225,6 +226,7 @@ def main():
 
         #pos_i[pos_i >= boxsize] = boxsize - 0.5 * dx # particle death
         bi_b = np.where(pos_i >= boxsize)
+        I += len(bi_b[0])
         pos_i = np.delete(pos_i, bi_b[0], axis=0)
         vel_i = np.delete(vel_i, bi_b[0], axis=0)
         acc_i = np.delete(acc_i, bi_b[0], axis=0)
@@ -232,6 +234,9 @@ def main():
         pos_i = np.delete(pos_i, bi[0], axis = 0)
         vel_i = np.delete(vel_i, bi[0], axis=0)
         acc_i = np.delete(acc_i, bi[0], axis=0)
+        print(I)
+
+        Vdc = 1*(I-800)
 
         # update time
         t += dt
@@ -242,8 +247,10 @@ def main():
         dNif = (N - Nh) * m.sqrt(3 * Ti) / 4 / boxsize / m.sqrt(mi)
         dNi = int(dNif)
 
-        dpos_e = np.zeros((dNe, 1))
-        dpos_i = np.zeros((dNi, 1))
+        #dpos_e = np.zeros((dNe, 1))
+        #dpos_i = np.zeros((dNi, 1))
+        dpos_e = np.random.rand(dNe, 1) * dx
+        dpos_i = np.random.rand(dNi, 1) * dx
         pos_e = np.vstack((pos_e, dpos_e))
         pos_i = np.vstack((pos_i, dpos_i))
 
@@ -255,7 +262,7 @@ def main():
         vel_i = np.vstack((vel_i, dvel_i))
 
         # update accelerations
-        acc_e, acc_i = getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w)
+        acc_e, acc_i = getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w, Vdc)
 
         # (1/2) kick
         vel_e += acc_e * dt / 2.0
@@ -287,7 +294,7 @@ def main():
             plt.cla()
             plt.scatter(pos_e, vel_e, s=.4, color='blue', alpha=0.5)
             plt.scatter(pos_i, vel_i, s=.4, color='red', alpha=0.5)
-            plt.axis([0, boxsize, -30, 30])
+            plt.axis([0, boxsize, -5, 5])
 
             plt.pause(0.001)
 
