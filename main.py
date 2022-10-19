@@ -67,10 +67,12 @@ def getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w):
     j_i[j_i == Nx-1] = Nx - 2
     #jp1_i = np.mod(jp1_i, Nx)  # periodic BC
 
-    n -= np.bincount(j_i[:, 0], weights=weight_j_i[:, 0], minlength=Nx);
+    n = np.bincount(j_i[:, 0], weights=weight_j_i[:, 0], minlength=Nx);
 
-    ni_boxsize = np.bincount(jp1_i[:, 0], weights=weight_jp1_i[:, 0], minlength=Nx);
-    n -= ni_boxsize
+    n += np.bincount(jp1_i[:, 0], weights=weight_jp1_i[:, 0], minlength=Nx);
+    n -= np.bincount(j[:, 0], weights=weight_j[:, 0], minlength=Nx);
+
+    n -= np.bincount(jp1[:, 0], weights=weight_jp1[:, 0], minlength=Nx);
 
     n *= n0 * boxsize / N / dx
 
@@ -294,7 +296,7 @@ def main():
             plt.cla()
             plt.scatter(pos_e, vel_e, s=.4, color='blue', alpha=0.5)
             plt.scatter(pos_i, vel_i, s=.4, color='red', alpha=0.5)
-            plt.axis([0, boxsize, -5, 5])
+            plt.axis([0, boxsize, -10, 10])
 
             plt.pause(0.001)
 
