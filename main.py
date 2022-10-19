@@ -80,7 +80,7 @@ def getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w):
 
     zerros = []
     zerros = [0 for index in range(Nx)]
-    zerros[Nx-1] = 0.1*n[Nx-1] - Vrf * np.sin(w*t)
+    zerros[Nx-1] = n[Nx-1] - Vrf * np.sin(w*t)
     #zerros[Nx - 1] = Vrf * np.sin(w * t)
 
     # Solve Laplace's Equation: laplacian(phi) = 0
