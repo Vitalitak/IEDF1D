@@ -49,14 +49,7 @@ def getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w):
 
     jp1[jp1 == Nx] = Nx-1 # particle death
     j[j == Nx-1] = Nx-2
-    #jp1[jp1 == 0] = 1  # particle death
-    #j[j == -1] = 0
     #jp1 = np.mod(jp1, Nx)  # periodic BC
-
-    n = np.bincount(j[:, 0], weights=weight_j[:, 0], minlength=Nx);
-
-    ne_boxsize = np.bincount(jp1[:, 0], weights=weight_jp1[:, 0], minlength=Nx);
-    n += ne_boxsize
 
     j_i = np.floor(pos_i / dx).astype(int)
     jp1_i = j_i + 1
@@ -68,10 +61,8 @@ def getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w):
     #jp1_i = np.mod(jp1_i, Nx)  # periodic BC
 
     n = np.bincount(j_i[:, 0], weights=weight_j_i[:, 0], minlength=Nx);
-
     n += np.bincount(jp1_i[:, 0], weights=weight_jp1_i[:, 0], minlength=Nx);
     n -= np.bincount(j[:, 0], weights=weight_j[:, 0], minlength=Nx);
-
     n -= np.bincount(jp1[:, 0], weights=weight_jp1[:, 0], minlength=Nx);
 
     n *= n0 * boxsize / N / dx
@@ -82,8 +73,8 @@ def getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w):
 
     zerros = []
     zerros = [0 for index in range(Nx)]
-    zerros[Nx-1] = n[Nx-1] - Vrf * np.sin(w*t)
-    #zerros[Nx - 1] = Vrf * np.sin(w * t)
+    #zerros[Nx-1] = n[Nx-1] - Vrf * np.sin(w*t)
+    zerros[Nx - 1] = 0.01*Vrf - Vrf * np.sin(w * t)
 
     # Solve Laplace's Equation: laplacian(phi) = 0
     phi_Lap_grid = spsolve(Laptx, zerros, permc_spec="MMD_AT_PLUS_A")
@@ -296,7 +287,7 @@ def main():
             plt.cla()
             plt.scatter(pos_e, vel_e, s=.4, color='blue', alpha=0.5)
             plt.scatter(pos_i, vel_i, s=.4, color='red', alpha=0.5)
-            plt.axis([0, boxsize, -10, 10])
+            plt.axis([0, boxsize, -30, 30])
 
             plt.pause(0.001)
 
