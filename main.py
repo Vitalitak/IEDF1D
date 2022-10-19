@@ -80,8 +80,8 @@ def getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w):
 
     zerros = []
     zerros = [0 for index in range(Nx)]
-    #zerros[Nx-1] = n[Nx-1] - Vrf * np.sin(w*t)
-    zerros[Nx - 1] = Vrf * np.sin(w * t)
+    zerros[Nx-1] = 0.1*n[Nx-1] - Vrf * np.sin(w*t)
+    #zerros[Nx - 1] = Vrf * np.sin(w * t)
 
     # Solve Laplace's Equation: laplacian(phi) = 0
     phi_Lap_grid = spsolve(Laptx, zerros, permc_spec="MMD_AT_PLUS_A")
@@ -294,7 +294,7 @@ def main():
             plt.cla()
             plt.scatter(pos_e, vel_e, s=.4, color='blue', alpha=0.5)
             plt.scatter(pos_i, vel_i, s=.4, color='red', alpha=0.5)
-            plt.axis([0, boxsize, -10, 10])
+            plt.axis([0, boxsize, -5, 5])
 
             plt.pause(0.001)
 
