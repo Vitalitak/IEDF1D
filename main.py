@@ -102,7 +102,7 @@ def main():
     N = 1000000  # Number of particles. Need 10 000 000
     Nx = 2000  # Number of mesh cells
     t = 0  # current time of the simulation
-    tEnd = 80  # time at which simulation ends [mks]
+    tEnd = 200  # time at which simulation ends [mks]
     dt = 1  # timestep 1mks
     boxsize = 100  # periodic domain [0,boxsize] 100 mkm
     n0 = 1  # electron number density
@@ -114,7 +114,7 @@ def main():
     mi = 73000 # ion mass
     Energy_max = 5.0  # max electron energy
     deltaE = 100  # energy discretization
-    Vrf = 15  # RF amplitude
+    Vrf = 5  # RF amplitude
     w = 2 * np.pi * 13.560000  # frequency
     plotRealTime = True  # switch on for plotting as the simulation goes along
 
@@ -180,6 +180,9 @@ def main():
     # number of timesteps
     Nt = int(np.ceil(tEnd / dt))
 
+    I = [0 for index in range(Nt)]
+    Vdc = [0 for index in range(Nt)]
+
     # prep figure
     fig = plt.figure(figsize=(5, 4), dpi=80)
 
@@ -188,23 +191,6 @@ def main():
         # (1/2) kick
         vel_e += acc_e * dt / 2.0
         vel_i += acc_i * dt / 2.0
-        """
-        for ind in range(N):
-            if (pos[ind] <= boxsize - dx) and (ind < Nh):
-                vel[ind] += acc[int(pos[ind]//dx), 0] * dt / 2.0 / me
-            elif (pos[ind] <= boxsize - dx) and (ind >= Nh):
-                vel[ind] -= acc[int(pos[ind]//dx), 0] * dt / 2.0 / mi
-            else:
-                vel[ind] = 0
-        """
-        """
-        for ind in range(N):
-            if (pos[ind] <= boxsize - dx) :
-                vel += acc * dt / 2.0
-            else:
-                vel[ind] = 0
-        """
-
 
         # drift
         pos_e += vel_e * dt
@@ -215,7 +201,7 @@ def main():
 
         #pos_e[pos_e >= boxsize] = boxsize - 0.5 * dx # particle death
         be_b = np.where(pos_e >= boxsize)
-        I = -len(be_b[0])
+        I[i] = -len(be_b[0])
         pos_e = np.delete(pos_e, be_b[0], axis=0)
         vel_e = np.delete(vel_e, be_b[0], axis=0)
         acc_e = np.delete(acc_e, be_b[0], axis=0)
@@ -226,7 +212,7 @@ def main():
 
         #pos_i[pos_i >= boxsize] = boxsize - 0.5 * dx # particle death
         bi_b = np.where(pos_i >= boxsize)
-        I += len(bi_b[0])
+        I[i] += len(bi_b[0])
         pos_i = np.delete(pos_i, bi_b[0], axis=0)
         vel_i = np.delete(vel_i, bi_b[0], axis=0)
         acc_i = np.delete(acc_i, bi_b[0], axis=0)
@@ -234,9 +220,9 @@ def main():
         pos_i = np.delete(pos_i, bi[0], axis = 0)
         vel_i = np.delete(vel_i, bi[0], axis=0)
         acc_i = np.delete(acc_i, bi[0], axis=0)
-        print(I)
+        #print(I)
 
-        Vdc = 1*(I-800)
+        Vdc[i] = 0.8*(I[i]-1000)
 
         # update time
         t += dt
@@ -262,33 +248,15 @@ def main():
         vel_i = np.vstack((vel_i, dvel_i))
 
         # update accelerations
-        acc_e, acc_i = getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w, Vdc)
+        acc_e, acc_i = getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w, Vdc[i])
 
         # (1/2) kick
         vel_e += acc_e * dt / 2.0
         vel_i += acc_i * dt / 2.0
 
-
         """
-        for ind in range(N):
-            if (pos[ind] <= boxsize - dx) and (ind < Nh):
-                vel[ind] += acc[int(pos[ind]//dx), 0] * dt / 2.0 / me
-            elif (pos[ind] <= boxsize - dx) and (ind >= Nh):
-                vel[ind] -= acc[int(pos[ind]//dx), 0] * dt / 2.0 / mi
-            else:
-                vel[ind] = 0
-        """
-        """
-        for ind in range(N):
-            if (pos[ind] <= boxsize - dx) :
-                vel += acc * dt / 2.0
-            else:
-                vel[ind] = 0
-        """
-
-        """
-        Phase diagram
-        """
+        #Phase diagram
+        
         # plot in real time - color 1/2 particles blue, other half red
         if plotRealTime or (i == Nt - 1):
             plt.cla()
@@ -303,7 +271,7 @@ def main():
     plt.ylabel('v')
     plt.savefig('pic.png', dpi=240)
     plt.show()
-    
+    """
     """
     # Electron energy distribution function
     energy = vel ** 2 / 2.0
@@ -327,7 +295,13 @@ def main():
     plt.show()
 
     """
+    plt.plot(np.multiply(dt, range(Nt)), I)
 
+    # Save figure
+    plt.xlabel('t')
+    plt.ylabel('I')
+    plt.savefig('Current-t.png', dpi=240)
+    plt.show()
 
     return 0
 
