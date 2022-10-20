@@ -220,7 +220,6 @@ def main():
         pos_i = np.delete(pos_i, bi[0], axis = 0)
         vel_i = np.delete(vel_i, bi[0], axis=0)
         acc_i = np.delete(acc_i, bi[0], axis=0)
-        #print(I)
 
         Vdc[i] = 0.8*(I[i]-1000)
 
@@ -295,12 +294,12 @@ def main():
     plt.show()
 
     """
-    plt.plot(np.multiply(dt, range(Nt)), I)
+    plt.plot(np.multiply(dt, range(Nt)), Vdc)
 
     # Save figure
     plt.xlabel('t')
-    plt.ylabel('I')
-    plt.savefig('Current-t.png', dpi=240)
+    plt.ylabel('Vdc')
+    plt.savefig('Vdc-t_Vrf5.png', dpi=240)
     plt.show()
 
     return 0
