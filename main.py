@@ -114,7 +114,7 @@ def main():
     mi = 73000 # ion mass
     Energy_max = 5.0  # max electron energy
     deltaE = 100  # energy discretization
-    Vrf = 5  # RF amplitude
+    Vrf = 10 # RF amplitude
     w = 2 * np.pi * 13.560000  # frequency
     plotRealTime = True  # switch on for plotting as the simulation goes along
 
@@ -253,9 +253,9 @@ def main():
         vel_e += acc_e * dt / 2.0
         vel_i += acc_i * dt / 2.0
 
-        """
+
         #Phase diagram
-        """
+        
         # plot in real time - color 1/2 particles blue, other half red
         if plotRealTime or (i == Nt - 1):
             plt.cla()
@@ -268,9 +268,9 @@ def main():
     # Save figure
     plt.xlabel('x')
     plt.ylabel('v')
-    plt.savefig('pic.png', dpi=240)
+    #plt.savefig('pic.png', dpi=240)
     plt.show()
-    
+
     """
     # Electron energy distribution function
     energy = vel ** 2 / 2.0
@@ -290,7 +290,7 @@ def main():
     # Save figure
     plt.xlabel('E')
     plt.ylabel('iedf')
-    plt.savefig('iedf.png', dpi=240)
+    #plt.savefig('iedf.png', dpi=240)
     plt.show()
     """
     """
@@ -299,7 +299,7 @@ def main():
     # Save figure
     plt.xlabel('t')
     plt.ylabel('Vdc')
-    plt.savefig('Vdc-t_Vrf5.png', dpi=240)
+    #plt.savefig('Vdc-t_Vrf5.png', dpi=240)
     plt.show()
     """
     return 0
