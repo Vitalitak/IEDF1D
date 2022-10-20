@@ -255,7 +255,7 @@ def main():
 
         """
         #Phase diagram
-        
+        """
         # plot in real time - color 1/2 particles blue, other half red
         if plotRealTime or (i == Nt - 1):
             plt.cla()
@@ -270,7 +270,7 @@ def main():
     plt.ylabel('v')
     plt.savefig('pic.png', dpi=240)
     plt.show()
-    """
+    
     """
     # Electron energy distribution function
     energy = vel ** 2 / 2.0
@@ -290,9 +290,9 @@ def main():
     # Save figure
     plt.xlabel('E')
     plt.ylabel('iedf')
-    plt.savefig('pic.png', dpi=240)
+    plt.savefig('iedf.png', dpi=240)
     plt.show()
-
+    """
     """
     plt.plot(np.multiply(dt, range(Nt)), Vdc)
 
@@ -301,7 +301,7 @@ def main():
     plt.ylabel('Vdc')
     plt.savefig('Vdc-t_Vrf5.png', dpi=240)
     plt.show()
-
+    """
     return 0
 
 
