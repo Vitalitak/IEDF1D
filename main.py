@@ -92,6 +92,10 @@ def getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w, Vdc):
     ae = -Ee / me
     ai = Ei / mi
 
+    # Unit calibration [amain] = [adef] * (1 mkm / 10 ns^2)/(number/9.1e-31 kg) = 9.1e-21
+    ae = ae * 9.1E-15
+    ai = ai * 9.1E-15
+
     return ae, ai
 
 
@@ -102,12 +106,12 @@ def main():
     N = 5000000  # Number of particles. Need 10 000 000
     Nx = 2000  # Number of mesh cells
     t = 0  # current time of the simulation
-    tEnd = 100  # time at which simulation ends [mks]
-    dt = 1  # timestep 1mks
+    tEnd = 20  # time at which simulation ends [100*10ns = 1mks]
+    dt = 1  # timestep [10ns]
     boxsize = 100  # periodic domain [0,boxsize] 100 mkm
     n0 = 1  # electron number density
-    vb = 0  # beam velocity
-    vth = 1  # beam width
+    vth = 2.38E-4  # (1 mkm/10ns)/sqrt(1.6e-19/9.1e-31)
+    #vth = 1
     Te = 2.3  # electron temperature
     Ti = 0.06  # ion temperature
     me = 1 # electron mass
@@ -115,7 +119,7 @@ def main():
     Energy_max = 5.0  # max electron energy
     deltaE = 100  # energy discretization
     Vrf = 10 # RF amplitude
-    w = 2 * np.pi * 13.560000  # frequency
+    w = 2 * np.pi * 0.1356  # frequency
     plotRealTime = True  # switch on for plotting as the simulation goes along
 
     # Generate Initial Conditions
@@ -264,7 +268,7 @@ def main():
             plt.cla()
             plt.scatter(pos_e, vel_e, s=.4, color='blue', alpha=0.5)
             plt.scatter(pos_i, vel_i, s=.4, color='red', alpha=0.5)
-            plt.axis([0, boxsize, -5, 5])
+            plt.axis([0, boxsize, -50, 50])
 
             plt.pause(0.001)
 
