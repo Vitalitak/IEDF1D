@@ -92,9 +92,9 @@ def getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w, Vdc):
     ae = -Ee / me
     ai = Ei / mi
 
-    # Unit calibration [amain] = [adef] * (1 mkm / 10 ns^2)/(number/9.1e-31 kg) = 9.1e-21
-    ae = ae * 9.1E-21
-    ai = ai * 9.1E-21
+    # Unit calibration [amain] = [adef] * (1e6 mkm / (1e9)^2 ns^2)/(1.6e-19/9.1e-31 kg) = 5.6875e-24
+    ae = ae * 5.6875E-24
+    ai = ai * 5.6875E-24
 
     return ae, ai
 
@@ -103,14 +103,14 @@ def main():
     """ Plasma PIC simulation """
 
     # Simulation parameters
-    N = 5000000  # Number of particles. Need 10 000 000
-    Nx = 2000  # Number of mesh cells
+    N = 10000000  # Number of particles. Need 10 000 000
+    Nx = 5000  # Number of mesh cells
     t = 0  # current time of the simulation
-    tEnd = 50  # time at which simulation ends [100*10ns = 1mks]
-    dt = 1  # timestep [10ns]
+    tEnd = 1000  # time at which simulation ends [ns]
+    dt = 10  # timestep [10ns]
     boxsize = 100  # periodic domain [0,boxsize] 100 mkm
     n0 = 1  # electron number density
-    vth = 2.38E-4  # (1 mkm/10ns)/sqrt(1.6e-19/9.1e-31)
+    vth = 420  # sqrt(1.6e-19/9.1e-31)*(1e6 mkm)/(1e9 ns)
     #vth = 1
     Te = 2.3  # electron temperature
     Ti = 0.06  # ion temperature
@@ -119,7 +119,7 @@ def main():
     Energy_max = 5.0  # max electron energy
     deltaE = 100  # energy discretization
     Vrf = 10 # RF amplitude
-    w = 2 * np.pi * 0.1356  # frequency
+    w = 2 * np.pi * 0.01356  # frequency
     plotRealTime = True  # switch on for plotting as the simulation goes along
 
     # Generate Initial Conditions
@@ -260,7 +260,7 @@ def main():
         vel_e += acc_e * dt / 2.0
         vel_i += acc_i * dt / 2.0
 
-        """
+
         #Phase diagram
         
         # plot in real time - color 1/2 particles blue, other half red
@@ -268,7 +268,7 @@ def main():
             plt.cla()
             plt.scatter(pos_e, vel_e, s=.4, color='blue', alpha=0.5)
             plt.scatter(pos_i, vel_i, s=.4, color='red', alpha=0.5)
-            plt.axis([0, boxsize, -50, 50])
+            plt.axis([0, boxsize, -5, 5])
 
             plt.pause(0.001)
 
@@ -277,7 +277,7 @@ def main():
     plt.ylabel('v')
     #plt.savefig('pic.png', dpi=240)
     plt.show()
-    """
+
     """
     # Electron energy distribution function
     energy = vel ** 2 / 2.0
@@ -300,7 +300,7 @@ def main():
     #plt.savefig('iedf.png', dpi=240)
     plt.show()
     """
-
+    """
     plt.plot(np.multiply(dt, range(Nt)), I)
 
     # Save figure
@@ -308,7 +308,7 @@ def main():
     plt.ylabel('I')
     #plt.savefig('Vdc-t_Vrf5.png', dpi=240)
     plt.show()
-
+    """
     return 0
 
 
