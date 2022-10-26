@@ -93,8 +93,8 @@ def getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w, Vdc):
     ai = Ei / mi
 
     # Unit calibration [amain] = [adef] * (1 mkm / 10 ns^2)/(number/9.1e-31 kg) = 9.1e-21
-    ae = ae * 9.1E-15
-    ai = ai * 9.1E-15
+    ae = ae * 9.1E-21
+    ai = ai * 9.1E-21
 
     return ae, ai
 
@@ -106,7 +106,7 @@ def main():
     N = 5000000  # Number of particles. Need 10 000 000
     Nx = 2000  # Number of mesh cells
     t = 0  # current time of the simulation
-    tEnd = 20  # time at which simulation ends [100*10ns = 1mks]
+    tEnd = 50  # time at which simulation ends [100*10ns = 1mks]
     dt = 1  # timestep [10ns]
     boxsize = 100  # periodic domain [0,boxsize] 100 mkm
     n0 = 1  # electron number density
