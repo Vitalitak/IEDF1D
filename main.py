@@ -99,10 +99,10 @@ def main():
     """ Plasma PIC simulation """
 
     # Simulation parameters
-    N = 1000000  # Number of particles. Need 10 000 000
+    N = 5000000  # Number of particles. Need 10 000 000
     Nx = 2000  # Number of mesh cells
     t = 0  # current time of the simulation
-    tEnd = 200  # time at which simulation ends [mks]
+    tEnd = 100  # time at which simulation ends [mks]
     dt = 1  # timestep 1mks
     boxsize = 100  # periodic domain [0,boxsize] 100 mkm
     n0 = 1  # electron number density
@@ -182,6 +182,7 @@ def main():
 
     I = [0 for index in range(Nt)]
     Vdc = [0 for index in range(Nt)]
+    q = 0
 
     # prep figure
     fig = plt.figure(figsize=(5, 4), dpi=80)
@@ -221,7 +222,9 @@ def main():
         vel_i = np.delete(vel_i, bi[0], axis=0)
         acc_i = np.delete(acc_i, bi[0], axis=0)
 
-        Vdc[i] = 0.8*(I[i]-1000)
+        # capacitor charge and capacity
+        q += I[i]
+        Vdc[i] = 0.8*q
 
         # update time
         t += dt
@@ -253,7 +256,7 @@ def main():
         vel_e += acc_e * dt / 2.0
         vel_i += acc_i * dt / 2.0
 
-
+        """
         #Phase diagram
         
         # plot in real time - color 1/2 particles blue, other half red
@@ -270,7 +273,7 @@ def main():
     plt.ylabel('v')
     #plt.savefig('pic.png', dpi=240)
     plt.show()
-
+    """
     """
     # Electron energy distribution function
     energy = vel ** 2 / 2.0
@@ -293,15 +296,15 @@ def main():
     #plt.savefig('iedf.png', dpi=240)
     plt.show()
     """
-    """
-    plt.plot(np.multiply(dt, range(Nt)), Vdc)
+
+    plt.plot(np.multiply(dt, range(Nt)), I)
 
     # Save figure
     plt.xlabel('t')
-    plt.ylabel('Vdc')
+    plt.ylabel('I')
     #plt.savefig('Vdc-t_Vrf5.png', dpi=240)
     plt.show()
-    """
+
     return 0
 
 
