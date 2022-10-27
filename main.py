@@ -103,14 +103,14 @@ def main():
     """ Plasma PIC simulation """
 
     # Simulation parameters
-    N = 10000000  # Number of particles. Need 10 000 000
+    N = 20000000  # Number of particles. Need 10 000 000
     Nx = 5000  # Number of mesh cells
     t = 0  # current time of the simulation
-    tEnd = 1000  # time at which simulation ends [ns]
-    dt = 10  # timestep [10ns]
-    boxsize = 100  # periodic domain [0,boxsize] 100 mkm
+    tEnd = 500  # time at which simulation ends [ns]
+    dt = 1  # timestep [1ns]
+    boxsize = 1000  # periodic domain [0,boxsize] [mkm] 1000 mkm
     n0 = 1  # electron number density
-    vth = 420  # sqrt(1.6e-19/9.1e-31)*(1e6 mkm)/(1e9 ns)
+    vth = 420  # (1e6 mkm)/(1e9 ns)/sqrt(1.6e-19/9.1e-31)
     #vth = 1
     Te = 2.3  # electron temperature
     Ti = 0.06  # ion temperature
@@ -260,7 +260,9 @@ def main():
         vel_e += acc_e * dt / 2.0
         vel_i += acc_i * dt / 2.0
 
-
+        I[i] *= 1.6E-19
+        Vdc[i] *= 1.6E-19
+        """
         #Phase diagram
         
         # plot in real time - color 1/2 particles blue, other half red
@@ -268,7 +270,7 @@ def main():
             plt.cla()
             plt.scatter(pos_e, vel_e, s=.4, color='blue', alpha=0.5)
             plt.scatter(pos_i, vel_i, s=.4, color='red', alpha=0.5)
-            plt.axis([0, boxsize, -5, 5])
+            plt.axis([0, boxsize, -10, 10])
 
             plt.pause(0.001)
 
@@ -277,6 +279,7 @@ def main():
     plt.ylabel('v')
     #plt.savefig('pic.png', dpi=240)
     plt.show()
+    """
 
     """
     # Electron energy distribution function
@@ -300,15 +303,15 @@ def main():
     #plt.savefig('iedf.png', dpi=240)
     plt.show()
     """
-    """
-    plt.plot(np.multiply(dt, range(Nt)), I)
+
+    plt.plot(np.multiply(dt, range(Nt)), Vdc)
 
     # Save figure
     plt.xlabel('t')
-    plt.ylabel('I')
+    plt.ylabel('Vdc')
     #plt.savefig('Vdc-t_Vrf5.png', dpi=240)
     plt.show()
-    """
+
     return 0
 
 
