@@ -267,7 +267,7 @@ def main():
         vel_e += acc_e * dt / 2.0
         vel_i += acc_i * dt / 2.0
 
-        I[i] *= 1.6E-19
+        #I[i] *= 1.6E-19
         #Vdc[i] *= 1.6E-19
         """
         #Phase diagram
