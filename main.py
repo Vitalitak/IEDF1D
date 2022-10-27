@@ -47,8 +47,8 @@ def getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w, Vdc):
     weight_j = (jp1 * dx - pos_e) / dx
     weight_jp1 = (pos_e - j * dx) / dx
 
-    jp1[jp1 == Nx] = Nx-1 # particle death
-    j[j == Nx-1] = Nx-2
+    #jp1[jp1 == Nx] = Nx-1 # particle death
+    #j[j == Nx-1] = Nx-2
     #jp1 = np.mod(jp1, Nx)  # periodic BC
 
     j_i = np.floor(pos_i / dx).astype(int)
@@ -56,25 +56,27 @@ def getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w, Vdc):
     weight_j_i = (jp1_i * dx - pos_i) / dx
     weight_jp1_i = (pos_i - j_i * dx) / dx
 
-    jp1_i[jp1_i == Nx] = Nx-1 # particle death
-    j_i[j_i == Nx-1] = Nx - 2
+    #jp1_i[jp1_i == Nx] = Nx-1 # particle death
+    #j_i[j_i == Nx-1] = Nx - 2
     #jp1_i = np.mod(jp1_i, Nx)  # periodic BC
 
-    n = np.bincount(j_i[:, 0], weights=weight_j_i[:, 0], minlength=Nx);
-    n += np.bincount(jp1_i[:, 0], weights=weight_jp1_i[:, 0], minlength=Nx);
-    n -= np.bincount(j[:, 0], weights=weight_j[:, 0], minlength=Nx);
-    n -= np.bincount(jp1[:, 0], weights=weight_jp1[:, 0], minlength=Nx);
+    n = np.bincount(j_i[:, 0], weights=weight_j_i[:, 0], minlength=Nx+1);
+    n += np.bincount(jp1_i[:, 0], weights=weight_jp1_i[:, 0], minlength=Nx+1);
+    n -= np.bincount(j[:, 0], weights=weight_j[:, 0], minlength=Nx+1);
+    n -= np.bincount(jp1[:, 0], weights=weight_jp1[:, 0], minlength=Nx+1);
 
+    n = np.delete(n, Nx)
     n *= n0 * boxsize / N / dx
 
     # Solve Poisson's Equation: laplacian(phi) = -n
     #phi_Pois_grid = spsolve(Lmtx, n - n0, permc_spec="MMD_AT_PLUS_A")
     phi_Pois_grid = spsolve(Laptx, -n, permc_spec="MMD_AT_PLUS_A")
 
+    #Vrf *= 1.6E19
     zerros = []
     zerros = [0 for index in range(Nx)]
     #zerros[Nx-1] = n[Nx-1] - Vrf * np.sin(w*t)
-    zerros[Nx - 1] = Vdc - Vrf * np.sin(w * t)
+    zerros[Nx - 1] = Vdc - Vrf * 1.6E-19 * np.sin(w * t)
 
     # Solve Laplace's Equation: laplacian(phi) = 0
     phi_Lap_grid = spsolve(Laptx, zerros, permc_spec="MMD_AT_PLUS_A")
@@ -86,6 +88,9 @@ def getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w, Vdc):
     # Interpolate grid value onto particle locations
     #E = weight_j * E_grid[j] + weight_jp1 * E_grid[jp1] # mistake here
 
+    # Boundary electric field
+    E_grid = np.hstack((E_grid, 0))
+
     Ee = weight_j * E_grid[j] + weight_jp1 * E_grid[jp1]
     Ei = weight_j_i * E_grid[j_i] + weight_jp1_i * E_grid[jp1_i]
 
@@ -95,6 +100,8 @@ def getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w, Vdc):
     # Unit calibration [amain] = [adef] * (1e6 mkm / (1e9)^2 ns^2)/(1.6e-19/9.1e-31 kg) = 5.6875e-24
     ae = ae * 5.6875E-24
     ai = ai * 5.6875E-24
+    #ae = ae * 5.6875
+    #ai = ai * 5.6875
 
     return ae, ai
 
@@ -103,10 +110,10 @@ def main():
     """ Plasma PIC simulation """
 
     # Simulation parameters
-    N = 20000000  # Number of particles. Need 10 000 000
+    N = 20000000  # Number of particles. Need 100 000 000
     Nx = 5000  # Number of mesh cells
     t = 0  # current time of the simulation
-    tEnd = 500  # time at which simulation ends [ns]
+    tEnd = 100  # time at which simulation ends [ns]
     dt = 1  # timestep [1ns]
     boxsize = 1000  # periodic domain [0,boxsize] [mkm] 1000 mkm
     n0 = 1  # electron number density
@@ -228,7 +235,7 @@ def main():
 
         # capacitor charge and capacity
         q += I[i]
-        Vdc[i] = 0.8*q
+        Vdc[i] = 1*q*1.6E-19
 
         # update time
         t += dt
@@ -261,7 +268,7 @@ def main():
         vel_i += acc_i * dt / 2.0
 
         I[i] *= 1.6E-19
-        Vdc[i] *= 1.6E-19
+        #Vdc[i] *= 1.6E-19
         """
         #Phase diagram
         
@@ -270,7 +277,7 @@ def main():
             plt.cla()
             plt.scatter(pos_e, vel_e, s=.4, color='blue', alpha=0.5)
             plt.scatter(pos_i, vel_i, s=.4, color='red', alpha=0.5)
-            plt.axis([0, boxsize, -10, 10])
+            plt.axis([0, boxsize, -50, 50])
 
             plt.pause(0.001)
 
