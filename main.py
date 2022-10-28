@@ -112,7 +112,7 @@ def main():
     N = 100000000  # Number of particles. Need 200 000 000
     Nx = 5000  # Number of mesh cells
     t = 0  # current time of the simulation
-    tEnd = 50  # time at which simulation ends [ns]
+    tEnd = 100  # time at which simulation ends [ns]
     dt = 1  # timestep [1ns]
     boxsize = 1000  # periodic domain [0,boxsize] [mkm] 1000 mkm
     n0 = 1  # electron number density
