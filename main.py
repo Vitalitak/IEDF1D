@@ -96,9 +96,9 @@ def getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w, Vdc):
     ae = -Ee / me
     ai = Ei / mi
 
-    # Unit calibration [amain] = [adef] * e^2/me/eps0/10^12
-    ae = ae * 3.18E-9
-    ai = ai * 3.18E-9
+    # Unit calibration [amain] = [adef] * e^2/me/eps0/10^24
+    ae = ae * 3.18E-21
+    ai = ai * 3.18E-21
     #ae = ae * 5.6875
     #ai = ai * 5.6875
 
@@ -196,7 +196,7 @@ def main():
     q = 0
 
     # prep figure
-    fig = plt.figure(figsize=(5, 4), dpi=80)
+    fig = plt.figure(figsize=(10, 10), dpi=80)
 
     # Simulation Main Loop
     for i in range(Nt):
@@ -277,7 +277,7 @@ def main():
             plt.cla()
             plt.scatter(pos_e, vel_e, s=.4, color='blue', alpha=0.5)
             plt.scatter(pos_i, vel_i, s=.4, color='red', alpha=0.5)
-            plt.axis([0, boxsize, -400, 400])
+            plt.axis([0, boxsize, -1000, 1000])
 
             plt.pause(0.001)
 
