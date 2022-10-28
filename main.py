@@ -66,17 +66,16 @@ def getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w, Vdc):
     n -= np.bincount(jp1[:, 0], weights=weight_jp1[:, 0], minlength=Nx+1);
 
     n = np.delete(n, Nx)
-    n *= n0 * boxsize / N / dx
+    #n *= n0 * boxsize / N / dx
 
     # Solve Poisson's Equation: laplacian(phi) = -n
     #phi_Pois_grid = spsolve(Lmtx, n - n0, permc_spec="MMD_AT_PLUS_A")
     phi_Pois_grid = spsolve(Laptx, -n, permc_spec="MMD_AT_PLUS_A")
 
-    #Vrf *= 1.6E19
+    Vrf *= 5.53E19  # Vrf = Vrf_volts*eps0*1E12/e
     zerros = []
     zerros = [0 for index in range(Nx)]
-    #zerros[Nx-1] = n[Nx-1] - Vrf * np.sin(w*t)
-    zerros[Nx - 1] = Vdc - Vrf * 1.6E-19 * np.sin(w * t)
+    zerros[Nx - 1] = Vdc - Vrf * np.sin(w * t)
 
     # Solve Laplace's Equation: laplacian(phi) = 0
     phi_Lap_grid = spsolve(Laptx, zerros, permc_spec="MMD_AT_PLUS_A")
@@ -97,9 +96,9 @@ def getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w, Vdc):
     ae = -Ee / me
     ai = Ei / mi
 
-    # Unit calibration [amain] = [adef] * (1e6 mkm / (1e9)^2 ns^2)/(1.6e-19/9.1e-31 kg) = 5.6875e-24
-    ae = ae * 5.6875E-24
-    ai = ai * 5.6875E-24
+    # Unit calibration [amain] = [adef] * e^2/me/eps0/10^12
+    ae = ae * 3.18E-9
+    ai = ai * 3.18E-9
     #ae = ae * 5.6875
     #ai = ai * 5.6875
 
@@ -110,23 +109,24 @@ def main():
     """ Plasma PIC simulation """
 
     # Simulation parameters
-    N = 20000000  # Number of particles. Need 100 000 000
+    N = 100000000  # Number of particles. Need 200 000 000
     Nx = 5000  # Number of mesh cells
     t = 0  # current time of the simulation
-    tEnd = 100  # time at which simulation ends [ns]
+    tEnd = 50  # time at which simulation ends [ns]
     dt = 1  # timestep [1ns]
     boxsize = 1000  # periodic domain [0,boxsize] [mkm] 1000 mkm
     n0 = 1  # electron number density
-    vth = 420  # (1e6 mkm)/(1e9 ns)/sqrt(1.6e-19/9.1e-31)
+    vth = 420  # (1e6 mkm)/(1e9 ns)/sqrt(1.6e-19/9.1e-31) [mkm/ns]
     #vth = 1
     Te = 2.3  # electron temperature
     Ti = 0.06  # ion temperature
-    me = 1 # electron mass
-    mi = 73000 # ion mass
+    me = 1  # electron mass
+    mi = 73000  # ion mass
     Energy_max = 5.0  # max electron energy
     deltaE = 100  # energy discretization
-    Vrf = 10 # RF amplitude
+    Vrf = 5  # RF amplitude
     w = 2 * np.pi * 0.01356  # frequency
+    C = 1  # capacity
     plotRealTime = True  # switch on for plotting as the simulation goes along
 
     # Generate Initial Conditions
@@ -235,7 +235,7 @@ def main():
 
         # capacitor charge and capacity
         q += I[i]
-        Vdc[i] = 1*q*1.6E-19
+        Vdc[i] = C*q
 
         # update time
         t += dt
@@ -277,7 +277,7 @@ def main():
             plt.cla()
             plt.scatter(pos_e, vel_e, s=.4, color='blue', alpha=0.5)
             plt.scatter(pos_i, vel_i, s=.4, color='red', alpha=0.5)
-            plt.axis([0, boxsize, -50, 50])
+            plt.axis([0, boxsize, -400, 400])
 
             plt.pause(0.001)
 
