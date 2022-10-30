@@ -14,7 +14,7 @@ using the Particle-In-Cell (PIC) method
 
 """
 
-def getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w, Vdc):
+def getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Laptx, t, Vrf, w, Vdc):
     """
     Calculate the acceleration on each particle due to electric field
     pos      is an Nx1 matrix of particle positions
@@ -102,7 +102,7 @@ def getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w, Vdc):
     #ae = ae * 5.6875
     #ai = ai * 5.6875
 
-    return ae, ai
+    return ae, ai, n
 
 
 def main():
@@ -112,7 +112,7 @@ def main():
     N = 100000000  # Number of particles. Need 200 000 000
     Nx = 5000  # Number of mesh cells
     t = 0  # current time of the simulation
-    tEnd = 100  # time at which simulation ends [ns]
+    tEnd = 20  # time at which simulation ends [ns]
     dt = 1  # timestep [1ns]
     boxsize = 1000  # periodic domain [0,boxsize] [mkm] 1000 mkm
     n0 = 1  # electron number density
@@ -186,7 +186,7 @@ def main():
     Laptx = sp.csr_matrix(Laptx)
 
     # calculate initial gravitational accelerations
-    acc_e, acc_i = getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Lmtx, Laptx, 0, Vrf, w, 0)
+    acc_e, acc_i, n = getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Laptx, 0, Vrf, w, 0)
 
     # number of timesteps
     Nt = int(np.ceil(tEnd / dt))
@@ -196,7 +196,7 @@ def main():
     q = 0
 
     # prep figure
-    fig = plt.figure(figsize=(10, 10), dpi=80)
+    fig = plt.figure(figsize=(6, 6), dpi=80)
 
     # Simulation Main Loop
     for i in range(Nt):
@@ -261,7 +261,7 @@ def main():
         vel_i = np.vstack((vel_i, dvel_i))
 
         # update accelerations
-        acc_e, acc_i = getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Lmtx, Laptx, t, Vrf, w, Vdc[i])
+        acc_e, acc_i, n = getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Laptx, t, Vrf, w, Vdc[i])
 
         # (1/2) kick
         vel_e += acc_e * dt / 2.0
@@ -288,6 +288,22 @@ def main():
     plt.show()
     """
 
+        # Concentration from coordinate
+
+        # plot in real time - color 1/2 particles blue, other half red
+        if plotRealTime or (i == Nt - 1):
+            plt.cla()
+            plt.plot(np.multiply(dx, range(Nx)), n)
+
+            plt.pause(0.001)
+
+    # Save figure
+    plt.xlabel('x')
+    plt.ylabel('n')
+    #plt.savefig('pic.png', dpi=240)
+    plt.show()
+
+
     """
     # Electron energy distribution function
     energy = vel ** 2 / 2.0
@@ -310,7 +326,7 @@ def main():
     #plt.savefig('iedf.png', dpi=240)
     plt.show()
     """
-
+    """
     plt.plot(np.multiply(dt, range(Nt)), Vdc)
 
     # Save figure
@@ -318,7 +334,7 @@ def main():
     plt.ylabel('Vdc')
     #plt.savefig('Vdc-t_Vrf5.png', dpi=240)
     plt.show()
-
+    """
     return 0
 
 
