@@ -112,7 +112,7 @@ def main():
     N = 100000000  # Number of particles. Need 200 000 000
     Nx = 5000  # Number of mesh cells
     t = 0  # current time of the simulation
-    tEnd = 20  # time at which simulation ends [ns]
+    tEnd = 50  # time at which simulation ends [ns]
     dt = 1  # timestep [1ns]
     boxsize = 1000  # periodic domain [0,boxsize] [mkm] 1000 mkm
     n0 = 1  # electron number density
@@ -204,6 +204,16 @@ def main():
         vel_e += acc_e * dt / 2.0
         vel_i += acc_i * dt / 2.0
 
+        # Concentration from coordinate
+
+        # plot in real time - color 1/2 particles blue, other half red
+        if plotRealTime or (i == Nt - 1):
+            plt.cla()
+            plt.plot(np.multiply(dx, range(Nx)), n)
+
+            plt.pause(0.001)
+
+
         # drift
         pos_e += vel_e * dt
         pos_i += vel_i * dt
@@ -287,6 +297,7 @@ def main():
     #plt.savefig('pic.png', dpi=240)
     plt.show()
     """
+        """
 
         # Concentration from coordinate
 
@@ -296,7 +307,7 @@ def main():
             plt.plot(np.multiply(dx, range(Nx)), n)
 
             plt.pause(0.001)
-
+        """
     # Save figure
     plt.xlabel('x')
     plt.ylabel('n')
