@@ -210,7 +210,9 @@ def main():
         if plotRealTime or (i == Nt - 1):
             plt.cla()
             plt.plot(np.multiply(dx, range(Nx)), n)
-
+            plt.axis([0, boxsize, -7000, 7000])
+            plt.xlabel('x')
+            plt.ylabel('n')
             plt.pause(0.001)
 
 
@@ -308,12 +310,13 @@ def main():
 
             plt.pause(0.001)
         """
+    """
     # Save figure
     plt.xlabel('x')
     plt.ylabel('n')
     #plt.savefig('pic.png', dpi=240)
     plt.show()
-
+    """
 
     """
     # Electron energy distribution function
@@ -346,6 +349,8 @@ def main():
     #plt.savefig('Vdc-t_Vrf5.png', dpi=240)
     plt.show()
     """
+    plt.show()
+
     return 0
 
 
