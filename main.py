@@ -72,7 +72,8 @@ def getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Laptx, t, Vrf, w, Vdc):
     #phi_Pois_grid = spsolve(Lmtx, n - n0, permc_spec="MMD_AT_PLUS_A")
     phi_Pois_grid = spsolve(Laptx, -n, permc_spec="MMD_AT_PLUS_A")
 
-    Vrf *= 5.53E19  # Vrf = Vrf_volts*eps0*1E12/e
+    #Vrf *= 5.53E19  # Vrf = Vrf_volts*eps0*1E12/e
+    Vrf *= 5.53E13  # Vrf = Vrf_volts*eps0*1E6/e
     zerros = []
     zerros = [0 for index in range(Nx)]
     zerros[Nx - 1] = Vdc - Vrf * np.sin(w * t)
@@ -97,10 +98,11 @@ def getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Laptx, t, Vrf, w, Vdc):
     ai = Ei / mi
 
     # Unit calibration [amain] = [adef] * e^2/me/eps0/10^24
-    ae = ae * 3.18E-21
-    ai = ai * 3.18E-21
-    #ae = ae * 5.6875
-    #ai = ai * 5.6875
+    #ae = ae * 3.18E-21
+    #ai = ai * 3.18E-21
+    ae = ae * 3.18E-15
+    ai = ai * 3.18E-15
+
 
     return ae, ai, n
 
@@ -110,9 +112,9 @@ def main():
 
     # Simulation parameters
     N = 100000000  # Number of particles. Need 200 000 000
-    Nx = 5000  # Number of mesh cells
+    Nx = 2000  # Number of mesh cells
     t = 0  # current time of the simulation
-    tEnd = 50  # time at which simulation ends [ns]
+    tEnd = 10  # time at which simulation ends [ns]
     dt = 1  # timestep [1ns]
     boxsize = 1000  # periodic domain [0,boxsize] [mkm] 1000 mkm
     n0 = 1  # electron number density
@@ -178,9 +180,10 @@ def main():
     Laptx = sp.spdiags(vals, diags, Nx, Nx);
     Laptx = sp.lil_matrix(Laptx)
     Laptx[0, 0] = 1
+    Laptx[0, 1] = 0
     #Laptx[0, Nx - 1] = 0
     #Laptx[Nx - 1, 0] = 0
-    #Laptx[Nx - 1, Nx - 2] = 0
+    Laptx[Nx - 1, Nx - 2] = 0
     Laptx[Nx - 1, Nx - 1] = 1
     Laptx /= dx ** 2
     Laptx = sp.csr_matrix(Laptx)
@@ -209,12 +212,13 @@ def main():
         # plot in real time - color 1/2 particles blue, other half red
         if plotRealTime or (i == Nt - 1):
             plt.cla()
-            plt.plot(np.multiply(dx, range(Nx)), n)
-            plt.axis([0, boxsize, -7000, 7000])
+            #plt.plot(np.multiply(dx, range(Nx)), n)
+            plt.scatter(pos_e, acc_e, s=.4, color='blue', alpha=0.5)
+            plt.axis([0, boxsize, -1E-11, 1E-11])
             plt.xlabel('x')
             plt.ylabel('n')
             plt.pause(0.001)
-
+            print(n)
 
         # drift
         pos_e += vel_e * dt
