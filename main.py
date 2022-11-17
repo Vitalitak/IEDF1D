@@ -66,6 +66,8 @@ def getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Laptx, t, Vrf, w, Vdc):
     n -= np.bincount(jp1[:, 0], weights=weight_jp1[:, 0], minlength=Nx+1);
 
     n = np.delete(n, Nx)
+    n[0] = 0
+    n[Nx-1] = 0
     #n *= n0 * boxsize / N / dx
 
     # Solve Poisson's Equation: laplacian(phi) = -n
@@ -112,13 +114,13 @@ def main():
 
     # Simulation parameters
     N = 100000000  # Number of particles. Need 200 000 000
-    Nx = 2000  # Number of mesh cells
+    Nx = 5000  # Number of mesh cells
     t = 0  # current time of the simulation
-    tEnd = 10  # time at which simulation ends [ns]
+    tEnd = 3  # time at which simulation ends [ns]
     dt = 1  # timestep [1ns]
     boxsize = 1000  # periodic domain [0,boxsize] [mkm] 1000 mkm
     n0 = 1  # electron number density
-    vth = 420  # (1e6 mkm)/(1e9 ns)/sqrt(1.6e-19/9.1e-31) [mkm/ns]
+    vth = 280  # (1e6 mkm)/(1e9 ns)/sqrt(1.6e-19/9.1e-31) [mkm/ns]
     #vth = 1
     Te = 2.3  # electron temperature
     Ti = 0.06  # ion temperature
