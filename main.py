@@ -121,7 +121,7 @@ def main():
     dt = 1  # timestep [1ns]
     boxsize = 2000  # periodic domain [0,boxsize] [mkm] 1000 mkm
     n0 = 1  # electron number density
-    vth = 1E-3  # (1e6 mkm)/(1e9 ns)/sqrt(1.6e-19/9.1e-31) [mkm/ns]
+    vth = 1E-3  # m/s to mkm/ns
     #vth = 1
     Te = 2.3  # electron temperature
     Ti = 0.06  # ion temperature
