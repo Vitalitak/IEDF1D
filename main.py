@@ -14,7 +14,7 @@ using the Particle-In-Cell (PIC) method
 
 """
 
-def getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Laptx, t, Vrf, w, Vdc):
+def getAcc(pos_e, pos_i, Nx, boxsize, neff, Gmtx, Laptx, t, Vrf, w, Vdc):
     """
     Calculate the acceleration on each particle due to electric field
     pos      is an Nx1 matrix of particle positions
@@ -37,6 +37,8 @@ def getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Laptx, t, Vrf, w, Vdc):
     """
     me = 1  # electron mass
     mi = 73000  # ion mass
+    me *= neff
+    mi *= neff
     pos = np.vstack((pos_e, pos_i))
 
     #N = pos_i.shape[0] - pos_e.shape[0]
@@ -69,7 +71,8 @@ def getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Laptx, t, Vrf, w, Vdc):
     # zero boundary conditions for Poisson equation
     n[0] = 0
     n[Nx-1] = 0
-    #n *= n0 * boxsize / N / dx
+
+    n *= neff
 
     # Solve Poisson's Equation: laplacian(phi) = -n
     #phi_Pois_grid = spsolve(Lmtx, n - n0, permc_spec="MMD_AT_PLUS_A")
@@ -79,6 +82,8 @@ def getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Laptx, t, Vrf, w, Vdc):
     Vrf *= 5.53E13  # Vrf = Vrf_volts*eps0*1E6/e
     zerros = []
     zerros = [0 for index in range(Nx)]
+
+    # boundary conditions for Laplace equation
     zerros[Nx - 1] = Vdc - Vrf * np.sin(w * t)
 
     # Solve Laplace's Equation: laplacian(phi) = 0
@@ -97,8 +102,8 @@ def getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Laptx, t, Vrf, w, Vdc):
     Ee = weight_j * E_grid[j] + weight_jp1 * E_grid[jp1]
     Ei = weight_j_i * E_grid[j_i] + weight_jp1_i * E_grid[jp1_i]
 
-    ae = -Ee / me
-    ai = Ei / mi
+    ae = -Ee * neff / me
+    ai = Ei * neff / mi
 
     # Unit calibration [amain] = [adef] * e^2/me/eps0/10^24
     #ae = ae * 3.18E-21
@@ -117,14 +122,14 @@ def main():
     N = 10000000  # Number of particles. Need 200 000 000
     Nx = 10000  # Number of mesh cells
     t = 0  # current time of the simulation
-    tEnd = 50  # time at which simulation ends [ns]
+    tEnd = 200  # time at which simulation ends [ns]
     dt = 1  # timestep [1ns]
     boxsize = 2000  # periodic domain [0,boxsize] [mkm] 1000 mkm
-    n0 = 1  # electron number density
+    neff = 10  # number of real particles corresponding to count particles
     vth = 1E-3  # m/s to mkm/ns
-    #vth = 1
     Te = 2.3  # electron temperature
     Ti = 0.06  # ion temperature
+    sheath = 150 # initial sheath
     me = 1  # electron mass
     mi = 73000  # ion mass
     Energy_max = 5.0  # max electron energy
@@ -140,16 +145,18 @@ def main():
     Nh = int(N / 2)
     Te *= 1.7E12/9.1 # kT/me
     Ti *= 1.7E12/9.1/mi # kT/mi
+    me *= neff
+    mi *= neff
 
     # Particle creation: position and velocity
-    pos_e = np.random.rand(Nh, 1) * boxsize
-    pos_i = np.random.rand(N-Nh, 1) * boxsize
+    pos_e = np.random.rand(N, 1) * (boxsize - sheath)
+    pos_i = np.random.rand(N, 1) * (boxsize - sheath)
     pos = np.vstack((pos_e, pos_i))
 
     #vel_e = vth / m.sqrt(Te) * np.random.normal(0, m.sqrt(Te), size = (Nh, 1))
     #vel_i = vth / m.sqrt(Ti) * np.random.normal(0, m.sqrt(Ti), size = (N-Nh, 1))
-    vel_e = vth * np.random.normal(0, m.sqrt(Te), size=(Nh, 1))
-    vel_i = vth * np.random.normal(0, m.sqrt(Ti), size=(N - Nh, 1))
+    vel_e = vth * np.random.normal(0, m.sqrt(Te), size=(N, 1))
+    vel_i = vth * np.random.normal(0, m.sqrt(Ti), size=(N, 1))
     vel = np.vstack((vel_e, vel_i))
 
     # Construct matrix G to computer Gradient  (1st derivative) (BOUNDARY CONDITIONS)
@@ -194,7 +201,7 @@ def main():
     Laptx = sp.csr_matrix(Laptx)
 
     # calculate initial gravitational accelerations
-    acc_e, acc_i, n = getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Laptx, 0, Vrf, w, 0)
+    acc_e, acc_i, n = getAcc(pos_e, pos_i, Nx, boxsize, neff, Gmtx, Laptx, 0, Vrf, w, 0)
 
     # number of timesteps
     Nt = int(np.ceil(tEnd / dt))
@@ -213,6 +220,16 @@ def main():
         vel_i += acc_i * dt / 2.0
 
         # Concentration from coordinate
+
+        # plot in real time - color 1/2 particles blue, other half red
+        if plotRealTime or (i == Nt - 1):
+            plt.cla()
+            plt.plot(np.multiply(dx, range(Nx)), n)
+
+            plt.pause(0.001)
+            print(acc_e)
+
+        # acceleration from coordinate
         """
         # plot in real time - color 1/2 particles blue, other half red
         if plotRealTime or (i == Nt - 1):
@@ -271,8 +288,10 @@ def main():
 
         #dpos_e = np.zeros((dNe, 1))
         #dpos_i = np.zeros((dNi, 1))
-        dpos_e = np.random.rand(dNe, 1) * dx
-        dpos_i = np.random.rand(dNi, 1) * dx
+        #dpos_e = np.random.rand(dNe, 1) * dx
+        #dpos_i = np.random.rand(dNi, 1) * dx
+        dpos_e = np.random.rand(dNe, 1) * (boxsize/2)
+        dpos_i = np.random.rand(dNi, 1) * (boxsize/2)
         pos_e = np.vstack((pos_e, dpos_e))
         pos_i = np.vstack((pos_i, dpos_i))
 
@@ -284,7 +303,7 @@ def main():
         vel_i = np.vstack((vel_i, dvel_i))
 
         # update accelerations
-        acc_e, acc_i, n = getAcc(pos_e, pos_i, Nx, boxsize, n0, Gmtx, Laptx, t, Vrf, w, Vdc[i])
+        acc_e, acc_i, n = getAcc(pos_e, pos_i, Nx, boxsize, neff, Gmtx, Laptx, t, Vrf, w, Vdc[i])
 
         # (1/2) kick
         vel_e += acc_e * dt / 2.0
@@ -311,7 +330,7 @@ def main():
     plt.show()
     """
 
-
+    """
         # Concentration from coordinate
 
         # plot in real time - color 1/2 particles blue, other half red
@@ -320,7 +339,8 @@ def main():
             plt.plot(np.multiply(dx, range(Nx)), n)
 
             plt.pause(0.001)
-
+            print(acc_e)
+    """
     """
     # Save figure
     plt.xlabel('x')
