@@ -80,7 +80,7 @@ def getAcc(pos_e, pos_i, Nx, boxsize, neff, Gmtx, Laptx, t, Vrf, w, Vdc):
 
     #Vrf *= 5.53E19  # Vrf = Vrf_volts*eps0*1E12/e
     #Vrf *= 5.53E13  # Vrf = Vrf_volts*eps0*1E6/e
-    Vdc *= 1.8E-8 # [V] = [Vdc counts]*[e C]/[eps0 F/m]//[1 m^3]
+    #Vdc *= 1.8E-8 # [V] = [Vdc counts]*[e C]/[eps0 F/m]//[1 m^3]
     zerros = []
     zerros = [0 for index in range(Nx)]
 
@@ -124,7 +124,7 @@ def main():
     N = 10000000  # Number of particles. Need 200 000 000
     Nx = 10000  # Number of mesh cells
     t = 0  # current time of the simulation
-    tEnd = 200  # time at which simulation ends [ns]
+    tEnd = 1000  # time at which simulation ends [ns]
     dt = 1  # timestep [1ns]
     boxsize = 2000  # periodic domain [0,boxsize] [mkm] 1000 mkm
     neff = 10  # number of real particles corresponding to count particles
@@ -136,9 +136,10 @@ def main():
     mi = 73000  # ion mass
     Energy_max = 5.0  # max electron energy
     deltaE = 100  # energy discretization
-    Vrf = 5  # RF amplitude
+    Vdc0 = 10 # initial Vdc
+    Vrf = 15  # RF amplitude
     w = 2 * np.pi * 0.01356  # frequency
-    C = 1  # capacity
+    C = 1000  # capacity
     plotRealTime = True  # switch on for plotting as the simulation goes along
 
     # Generate Initial Conditions
@@ -203,7 +204,7 @@ def main():
     Laptx = sp.csr_matrix(Laptx)
 
     # calculate initial gravitational accelerations
-    acc_e, acc_i, n = getAcc(pos_e, pos_i, Nx, boxsize, neff, Gmtx, Laptx, 0, Vrf, w, 0)
+    acc_e, acc_i, n = getAcc(pos_e, pos_i, Nx, boxsize, neff, Gmtx, Laptx, 0, Vrf, w, Vdc0)
 
     # number of timesteps
     Nt = int(np.ceil(tEnd / dt))
@@ -211,6 +212,7 @@ def main():
     I = [0 for index in range(Nt)]
     Vdc = [0 for index in range(Nt)]
     q = 0
+    Vdc[0] = Vdc0
 
     # prep figure
     fig = plt.figure(figsize=(6, 6), dpi=80)
@@ -222,7 +224,7 @@ def main():
         vel_i += acc_i * dt / 2.0
 
         # Concentration from coordinate
-
+        """
         # plot in real time - color 1/2 particles blue, other half red
         if plotRealTime or (i == Nt - 1):
             plt.cla()
@@ -230,7 +232,7 @@ def main():
 
             plt.pause(0.001)
             print(acc_e)
-
+        """
         # acceleration from coordinate
         """
         # plot in real time - color 1/2 particles blue, other half red
@@ -276,6 +278,7 @@ def main():
         # capacitor charge and capacity
         q += I[i]
         Vdc[i] = C*q
+        Vdc[i] *= 1.8E-8  # [V] = [Vdc counts]*[e C]/[eps0 F/m]//[1 m^3]
 
         # update time
         t += dt
@@ -373,7 +376,7 @@ def main():
     #plt.savefig('iedf.png', dpi=240)
     plt.show()
     """
-    """
+
     plt.plot(np.multiply(dt, range(Nt)), Vdc)
 
     # Save figure
@@ -381,7 +384,8 @@ def main():
     plt.ylabel('Vdc')
     #plt.savefig('Vdc-t_Vrf5.png', dpi=240)
     plt.show()
-    """
+
+    plt.plot(np.multiply(dx, range(Nx)), n)
     plt.show()
 
     return 0
