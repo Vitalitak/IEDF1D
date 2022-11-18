@@ -145,7 +145,7 @@ def main():
     # Generate Initial Conditions
     np.random.seed(42)  # set the random number generator seed
 
-    Nh = int(N / 2)
+    #Nh = int(N / 2)
     Te *= 1.7E12/9.1 # kT/me
     Ti *= 1.7E12/9.1/mi # kT/mi
     me *= neff
@@ -154,13 +154,13 @@ def main():
     # Particle creation: position and velocity
     pos_e = np.random.rand(N, 1) * (boxsize - sheath)
     pos_i = np.random.rand(N, 1) * (boxsize - sheath)
-    pos = np.vstack((pos_e, pos_i))
+    #pos = np.vstack((pos_e, pos_i))
 
     #vel_e = vth / m.sqrt(Te) * np.random.normal(0, m.sqrt(Te), size = (Nh, 1))
     #vel_i = vth / m.sqrt(Ti) * np.random.normal(0, m.sqrt(Ti), size = (N-Nh, 1))
     vel_e = vth * np.random.normal(0, m.sqrt(Te), size=(N, 1))
     vel_i = vth * np.random.normal(0, m.sqrt(Ti), size=(N, 1))
-    vel = np.vstack((vel_e, vel_i))
+    #vel = np.vstack((vel_e, vel_i))
 
     # Construct matrix G to computer Gradient  (1st derivative) (BOUNDARY CONDITIONS)
     dx = boxsize / Nx
