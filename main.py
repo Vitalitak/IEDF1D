@@ -72,7 +72,7 @@ def getAcc(pos_e, pos_i, Nx, boxsize, neff, Gmtx, Laptx, t, Vrf, w, Vdc):
     n[0] = 0
     n[Nx-1] = 0
 
-    n *= neff * 18080 # [V] = [n counts*mkm^2]*[e C]/[eps0 F/m]/[1E-12 mkm^2/m^2]/[1 m]
+    n *= neff * 18080 # [V / mkm^2] = [n counts]*[e C]/[eps0 F/m]/[1E-12 mkm^2/m^2]/[1 m]
 
     # Solve Poisson's Equation: laplacian(phi) = -n
     #phi_Pois_grid = spsolve(Lmtx, n - n0, permc_spec="MMD_AT_PLUS_A")
@@ -278,7 +278,7 @@ def main():
         # capacitor charge and capacity
         q += I[i]
         Vdc[i] = C*q
-        Vdc[i] *= 1.8E-8  # [V] = [Vdc counts]*[e C]/[eps0 F/m]//[1 m^3]
+        Vdc[i] *= 1.8E-8  # [V] = [Vdc counts]*[e C]/[eps0 F/m]/[1 m^3]
 
         # update time
         t += dt
@@ -356,7 +356,7 @@ def main():
 
     """
     # Electron energy distribution function
-    energy = vel ** 2 / 2.0
+    energy = vel_i ** 2 / 2.0
     iedf = []
     iedf = [0 for index in range(deltaE)]
     dE = Energy_max / deltaE
@@ -384,8 +384,9 @@ def main():
     plt.ylabel('Vdc')
     #plt.savefig('Vdc-t_Vrf5.png', dpi=240)
     plt.show()
-
+    
     plt.plot(np.multiply(dx, range(Nx)), n)
+
     plt.show()
 
     return 0
