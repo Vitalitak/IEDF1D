@@ -72,14 +72,15 @@ def getAcc(pos_e, pos_i, Nx, boxsize, neff, Gmtx, Laptx, t, Vrf, w, Vdc):
     n[0] = 0
     n[Nx-1] = 0
 
-    n *= neff
+    n *= neff * 18080 # [V] = [n counts*mkm^2]*[e C]/[eps0 F/m]/[1E-12 mkm^2/m^2]/[1 m]
 
     # Solve Poisson's Equation: laplacian(phi) = -n
     #phi_Pois_grid = spsolve(Lmtx, n - n0, permc_spec="MMD_AT_PLUS_A")
     phi_Pois_grid = spsolve(Laptx, -n, permc_spec="MMD_AT_PLUS_A")
 
     #Vrf *= 5.53E19  # Vrf = Vrf_volts*eps0*1E12/e
-    Vrf *= 5.53E13  # Vrf = Vrf_volts*eps0*1E6/e
+    #Vrf *= 5.53E13  # Vrf = Vrf_volts*eps0*1E6/e
+    Vdc *= 1.8E-8 # [V] = [Vdc counts]*[e C]/[eps0 F/m]//[1 m^3]
     zerros = []
     zerros = [0 for index in range(Nx)]
 
@@ -105,12 +106,13 @@ def getAcc(pos_e, pos_i, Nx, boxsize, neff, Gmtx, Laptx, t, Vrf, w, Vdc):
     ae = -Ee * neff / me
     ai = Ei * neff / mi
 
-    # Unit calibration [amain] = [adef] * e^2/me/eps0/10^24
+    # Unit calibration [a mkm/ ns^2] = [a V/mkm/e.m.u.] * [e C] * [1E-6 mkm/m] * [1E-12 mkm/ns^2] / [me kg/e.m.u.]
     #ae = ae * 3.18E-21
     #ai = ai * 3.18E-21
-    ae = ae * 3.18E-15
-    ai = ai * 3.18E-15
-
+    #ae = ae * 3.18E-15
+    #ai = ai * 3.18E-15
+    ae = ae * 1.76E-7
+    ai = ai * 1.76E-7
 
     return ae, ai, n
 
@@ -236,9 +238,9 @@ def main():
             plt.cla()
             #plt.plot(np.multiply(dx, range(Nx)), n)
             plt.scatter(pos_e, acc_e, s=.4, color='blue', alpha=0.5)
-            plt.axis([0, boxsize, -1E-11, 1E-11])
+            plt.axis([0, boxsize, -1E-4, 1E-4])
             plt.xlabel('x')
-            plt.ylabel('n')
+            plt.ylabel('ae')
             plt.pause(0.001)
             print(n)
         """
