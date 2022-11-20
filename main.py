@@ -84,8 +84,8 @@ def getAcc(pos_e, pos_i, Nx, boxsize, neff, Gmtx, Laptx, t, Vrf, w, Vdc):
     zerros = []
     zerros = [0 for index in range(Nx)]
 
-    # boundary conditions for Laplace equation
-    zerros[Nx - 1] = Vdc - Vrf * np.sin(w * t)
+    # boundary conditions for Laplace equation: phi_Lap(Nx-1)/dx^2 = zerros[Nx-1]
+    zerros[Nx - 1] = (Vdc - Vrf * np.sin(w * t)) / dx ** 2
 
     # Solve Laplace's Equation: laplacian(phi) = 0
     phi_Lap_grid = spsolve(Laptx, zerros, permc_spec="MMD_AT_PLUS_A")
@@ -122,7 +122,7 @@ def main():
 
     # Simulation parameters
     N = 10000000  # Number of particles. Need 200 000 000
-    Nx = 10000  # Number of mesh cells
+    Nx = 20000  # Number of mesh cells
     t = 0  # current time of the simulation
     tEnd = 1000  # time at which simulation ends [ns]
     dt = 1  # timestep [1ns]
@@ -385,7 +385,7 @@ def main():
     #plt.savefig('Vdc-t_Vrf5.png', dpi=240)
     plt.show()
     
-    plt.plot(np.multiply(dx, range(Nx)), n)
+    plt.plot(np.multiply(dx, range(Nx)), n * dx ** 2)
 
     plt.show()
 
