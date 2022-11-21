@@ -72,7 +72,8 @@ def getAcc(pos_e, pos_i, Nx, boxsize, neff, Gmtx, Laptx, t, Vrf, w, Vdc):
     n[0] = 0
     n[Nx-1] = 0
 
-    n *= neff * 18080 # [V / mkm^2] = [n counts]*[e C]/[eps0 F/m]/[1E-12 mkm^2/m^2]/[1 m]
+    #n *= neff * 18080 # [V / mkm^2] = [n counts]*[e C]/[eps0 F/m]/[1E-12 mkm^2/m^2]/[1 m]
+    n *= neff * 0.018080 / dx  # [V / mkm^2] = [n counts]*[e C]/[eps0 F/mkm]/[dx mkm]/[1 mkm^2]
 
     # Solve Poisson's Equation: laplacian(phi) = -n
     #phi_Pois_grid = spsolve(Lmtx, n - n0, permc_spec="MMD_AT_PLUS_A")
@@ -139,7 +140,7 @@ def main():
     Vdc0 = 10 # initial Vdc
     Vrf = 15  # RF amplitude
     w = 2 * np.pi * 0.01356  # frequency
-    C = 1000  # capacity
+    C = 1E-20  # capacity C = C0[F]/(Selectr/Smodel) Smodel = 1 mkm^2, C0 = 1000 pF
     plotRealTime = True  # switch on for plotting as the simulation goes along
 
     # Generate Initial Conditions
@@ -150,6 +151,7 @@ def main():
     Ti *= 1.7E12/9.1/mi # kT/mi
     me *= neff
     mi *= neff
+    C /= 1.6E-19 # [C] = [F/C]
 
     # Particle creation: position and velocity
     pos_e = np.random.rand(N, 1) * (boxsize - sheath)
@@ -277,8 +279,9 @@ def main():
 
         # capacitor charge and capacity
         q += I[i]
-        Vdc[i] = C*q
-        Vdc[i] *= 1.8E-8  # [V] = [Vdc counts]*[e C]/[eps0 F/m]/[1 m^3]
+        Vdc[i] = q/C
+        #Vdc[i] *= 1.8E-8  # [V] = [Vdc counts/F]*[e C]
+        #Vdc[i] *= 0.018080  # [V] = [Vdc counts]*[e C]/[eps0 F/mkm]/[1 m^3]
 
         # update time
         t += dt
@@ -384,7 +387,15 @@ def main():
     plt.ylabel('Vdc')
     #plt.savefig('Vdc-t_Vrf5.png', dpi=240)
     plt.show()
-    
+
+    plt.plot(np.multiply(dt, range(Nt)), I)
+
+    # Save figure
+    plt.xlabel('t')
+    plt.ylabel('I')
+    # plt.savefig('Vdc-t_Vrf5.png', dpi=240)
+    plt.show()
+
     plt.plot(np.multiply(dx, range(Nx)), n * dx ** 2)
 
     plt.show()
