@@ -288,10 +288,10 @@ def main():
 
         # particle generation
         #dNef = Nh * m.sqrt(3 * Te) / 4 / boxsize / m.sqrt(me)
-        dNef = m.sqrt(3 * Te) / 4 / boxsize / m.sqrt(me)
+        dNef = vth * N * m.sqrt(3 * Te) / 4 / boxsize
         dNe = int(dNef)
         #dNif = (N - Nh) * m.sqrt(3 * Ti) / 4 / boxsize / m.sqrt(mi)
-        dNif = m.sqrt(3 * Ti) / 4 / boxsize / m.sqrt(mi)
+        dNif = vth * N * m.sqrt(3 * Ti) / 4 / boxsize
         dNi = int(dNif)
 
         #dpos_e = np.zeros((dNe, 1))
