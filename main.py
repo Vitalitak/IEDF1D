@@ -125,14 +125,14 @@ def main():
     N = 10000000  # Number of particles. Need 200 000 000
     Nx = 20000  # Number of mesh cells
     t = 0  # current time of the simulation
-    tEnd = 1000  # time at which simulation ends [ns]
-    dt = 1  # timestep [1ns]
+    tEnd = 10  # time at which simulation ends [ns]
+    dt = 0.01  # timestep [1ns]
     boxsize = 2000  # periodic domain [0,boxsize] [mkm] 1000 mkm
     neff = 10  # number of real particles corresponding to count particles
     vth = 1E-3  # m/s to mkm/ns
     Te = 2.3  # electron temperature
     Ti = 0.06  # ion temperature
-    sheath = 150 # initial sheath
+    sheath = 0 # initial sheath
     me = 1  # electron mass
     mi = 73000  # ion mass
     Energy_max = 5.0  # max electron energy
@@ -153,7 +153,7 @@ def main():
     mi *= neff
     C /= 1.6E-19 # [C] = [F/C]
 
-    # Particle creation: position and velocity
+    # Particle creation: position and velocity: mistake Sheath
     pos_e = np.random.rand(N, 1) * (boxsize - sheath)
     pos_i = np.random.rand(N, 1) * (boxsize - sheath)
     #pos = np.vstack((pos_e, pos_i))
@@ -290,18 +290,18 @@ def main():
 
         # particle generation
         #dNef = Nh * m.sqrt(3 * Te) / 4 / boxsize / m.sqrt(me)
-        dNef = vth * N * m.sqrt(3 * Te) / 4 / boxsize
+        dNef = vth * N * dt * m.sqrt(3 * Te) / 4 / boxsize
         dNe = int(dNef)
         #dNif = (N - Nh) * m.sqrt(3 * Ti) / 4 / boxsize / m.sqrt(mi)
-        dNif = vth * N * m.sqrt(3 * Ti) / 4 / boxsize
+        dNif = vth * N * dt * m.sqrt(3 * Ti) / 4 / boxsize
         dNi = int(dNif)
 
         #dpos_e = np.zeros((dNe, 1))
         #dpos_i = np.zeros((dNi, 1))
         #dpos_e = np.random.rand(dNe, 1) * dx
         #dpos_i = np.random.rand(dNi, 1) * dx
-        dpos_e = np.random.rand(dNe, 1) * 1000 # length electrons for dt
-        dpos_i = np.random.rand(dNi, 1) * 0.7 # length ions for dt
+        dpos_e = np.random.rand(dNe, 1) * 10 # length electrons for dt
+        dpos_i = np.random.rand(dNi, 1) * 0.007 # length ions for dt
         pos_e = np.vstack((pos_e, dpos_e))
         pos_i = np.vstack((pos_i, dpos_i))
 
