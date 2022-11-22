@@ -214,7 +214,7 @@ def main():
     Nt = int(np.ceil(tEnd / dt))
 
     I = [0 for index in range(Nt)]
-    Vdc = [0 for index in range(Nt)]
+    Vdc = [0 for index in range(Nt+1)]
     q = 0
     Vdc[0] = Vdc0
 
@@ -281,7 +281,7 @@ def main():
 
         # capacitor charge and capacity
         q += I[i]
-        Vdc[i] = q/C
+        Vdc[i+1] = q/C
         #Vdc[i] *= 1.8E-8  # [V] = [Vdc counts/F]*[e C]
         #Vdc[i] *= 0.018080  # [V] = [Vdc counts]*[e C]/[eps0 F/mkm]/[1 m^3]
 
@@ -382,7 +382,7 @@ def main():
     plt.show()
     """
 
-    plt.plot(np.multiply(dt, range(Nt)), Vdc)
+    plt.plot(np.multiply(dt, range(Nt+1)), Vdc)
 
     # Save figure
     plt.xlabel('t')
