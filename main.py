@@ -137,10 +137,10 @@ def main():
     mi = 73000  # ion mass
     Energy_max = 5.0  # max electron energy
     deltaE = 100  # energy discretization
-    Vdc0 = 10 # initial Vdc
+    Vdc0 = -10 # initial Vdc
     Vrf = 15  # RF amplitude
     w = 2 * np.pi * 0.01356  # frequency
-    C = 1E-20  # capacity C = C0[F]/(Selectr/Smodel) Smodel = 1 mkm^2, C0 = 1000 pF
+    C = 1.4E-20  # capacity C = C0[F]/(Selectr/Smodel) Smodel = 1 mkm^2, Selectr = 7.1e10 mkm^2, C0 = 1000 pF
     plotRealTime = True  # switch on for plotting as the simulation goes along
 
     # Generate Initial Conditions
@@ -180,6 +180,7 @@ def main():
     Gmtx /= (2 * dx)
     Gmtx = sp.csr_matrix(Gmtx)
 
+    """
     # Construct matrix L to computer Laplacian (2nd derivative) for Poisson
     diags = np.array([-1, 0, 1])
     vals = np.vstack((e, -2 * e, e))
@@ -189,6 +190,7 @@ def main():
     Lmtx[Nx - 1, 0] = 1
     Lmtx /= dx ** 2
     Lmtx = sp.csr_matrix(Lmtx)
+    """
 
     # Construct matrix L to computer Laplacian (2nd derivative) for Laplace (BOUNDARY CONDITIONS)
     diags = np.array([-1, 0, 1])
