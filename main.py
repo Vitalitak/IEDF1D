@@ -300,8 +300,8 @@ def main():
         #dpos_i = np.zeros((dNi, 1))
         #dpos_e = np.random.rand(dNe, 1) * dx
         #dpos_i = np.random.rand(dNi, 1) * dx
-        dpos_e = np.random.rand(dNe, 1) * (boxsize/2)
-        dpos_i = np.random.rand(dNi, 1) * (boxsize/2)
+        dpos_e = np.random.rand(dNe, 1) * 1000 # length electrons for dt
+        dpos_i = np.random.rand(dNi, 1) * 0.7 # length ions for dt
         pos_e = np.vstack((pos_e, dpos_e))
         pos_i = np.vstack((pos_i, dpos_i))
 
