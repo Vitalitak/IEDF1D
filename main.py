@@ -128,7 +128,7 @@ def main():
     tEnd = 10  # time at which simulation ends [ns]
     dt = 0.01  # timestep [1ns]
     boxsize = 500  # periodic domain [0,boxsize] [mkm] 1000 mkm
-    neff = 20  # number of real particles corresponding to count particles
+    neff = 100  # number of real particles corresponding to count particles
     vth = 1E-3  # m/s to mkm/ns
     Te = 2.3  # electron temperature
     Ti = 0.06  # ion temperature
