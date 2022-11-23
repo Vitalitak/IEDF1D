@@ -122,13 +122,13 @@ def main():
     """ Plasma PIC simulation """
 
     # Simulation parameters
-    N = 10000000  # Number of particles. Need 200 000 000
-    Nx = 20000  # Number of mesh cells
+    N = 1000000  # Number of particles. Need 100 000 000 real particles
+    Nx = 50000  # Number of mesh cells Need dx <= 0.01 mkm
     t = 0  # current time of the simulation
-    tEnd = 10  # time at which simulation ends [ns]
+    tEnd = 1  # time at which simulation ends [ns]
     dt = 0.01  # timestep [1ns]
-    boxsize = 2000  # periodic domain [0,boxsize] [mkm] 1000 mkm
-    neff = 10  # number of real particles corresponding to count particles
+    boxsize = 500  # periodic domain [0,boxsize] [mkm] 1000 mkm
+    neff = 100  # number of real particles corresponding to count particles
     vth = 1E-3  # m/s to mkm/ns
     Te = 2.3  # electron temperature
     Ti = 0.06  # ion temperature
