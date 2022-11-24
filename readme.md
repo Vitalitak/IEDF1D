@@ -24,3 +24,10 @@ N = 1000000
 dNe+ = 5700
 dNe-el = 2600
 dNe-pl = 3000
+
+
+TODO:
+
+Electric field boundary condition at x=0
+
+mirror reflection at x=0
