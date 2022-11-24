@@ -7,12 +7,19 @@ Quasi-neutral plasma with concentration of N particles per volume equals to boxs
 Units:
 [x] = mkm
 [t] = ns
-vel_e ~ 1100 mkm/ns
-vel_i ~ 0.68 mkm/ns
-dt = 0.01 ns
-dx = 0.01 mkm
 
+vel_e ~ 1100 mkm/ns
+
+vel_i ~ 0.68 mkm/ns
+
+dx = 0.01 mkm
+dt = 0.01 ns
 
 
 Current problem:
 Disturbed of continuity equation. Particles generated in plasma break electric field.
+
+N = 1000000
+
+dNe+ = 5700
+dNe-el = 2600
