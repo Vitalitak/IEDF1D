@@ -214,6 +214,7 @@ def main():
     Nt = int(np.ceil(tEnd / dt))
 
     I = [0 for index in range(Nt)]
+    Ip = [0 for index in range(Nt)]
     Vdc = [0 for index in range(Nt+1)]
     q = 0
     Vdc[0] = Vdc0
@@ -264,6 +265,7 @@ def main():
         vel_e = np.delete(vel_e, be_b[0], axis=0)
         acc_e = np.delete(acc_e, be_b[0], axis=0)
         be = np.where(pos_e <= 0)
+        Ip[i] = -len(be[0])
         pos_e = np.delete(pos_e, be[0], axis = 0)
         vel_e = np.delete(vel_e, be[0], axis = 0)
         acc_e = np.delete(acc_e, be[0], axis = 0)
@@ -275,6 +277,7 @@ def main():
         vel_i = np.delete(vel_i, bi_b[0], axis=0)
         acc_i = np.delete(acc_i, bi_b[0], axis=0)
         bi = np.where(pos_i <= 0)
+        Ip[i] += len(bi[0])
         pos_i = np.delete(pos_i, bi[0], axis = 0)
         vel_i = np.delete(vel_i, bi[0], axis=0)
         acc_i = np.delete(acc_i, bi[0], axis=0)
@@ -382,11 +385,11 @@ def main():
     plt.show()
     """
 
-    plt.plot(np.multiply(dt, range(Nt+1)), Vdc)
+    plt.plot(np.multiply(dt, range(Nt)), Ip)
 
     # Save figure
     plt.xlabel('t')
-    plt.ylabel('Vdc')
+    plt.ylabel('Ip')
     #plt.savefig('Vdc-t_Vrf5.png', dpi=240)
     plt.show()
 
