@@ -125,7 +125,7 @@ def main():
     N = 1000000  # Number of particles. Need 100 000 000 real particles
     Nx = 50000  # Number of mesh cells Need dx <= 0.01 mkm
     t = 0  # current time of the simulation
-    tEnd = 3  # time at which simulation ends [ns]
+    tEnd = 0.5  # time at which simulation ends [ns]
     dt = 0.01  # timestep [1ns]
     boxsize = 500  # periodic domain [0,boxsize] [mkm] 1000 mkm
     neff = 100  # number of real particles corresponding to count particles
@@ -198,8 +198,8 @@ def main():
     vals = np.vstack((e, -2 * e, e))
     Laptx = sp.spdiags(vals, diags, Nx, Nx);
     Laptx = sp.lil_matrix(Laptx)
-    Laptx[0, 0] = 1
-    Laptx[0, 1] = 0
+    Laptx[0, 0] = -1
+    Laptx[0, 1] = 1
     #Laptx[0, Nx - 1] = 0
     #Laptx[Nx - 1, 0] = 0
     Laptx[Nx - 1, Nx - 2] = 0
