@@ -411,6 +411,14 @@ def main():
     # plt.savefig('Vdc-t_Vrf5.png', dpi=240)
     plt.show()
 
+    plt.plot(np.multiply(dt, range(Nt)), Vdc)
+
+    # Save figure
+    plt.xlabel('t')
+    plt.ylabel('Vdc')
+    # plt.savefig('Vdc-t_Vrf5.png', dpi=240)
+    plt.show()
+
     plt.plot(np.multiply(dx, range(Nx)), n * dx ** 2)
 
     plt.show()
