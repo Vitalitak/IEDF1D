@@ -125,7 +125,7 @@ def main():
     N = 1000000  # Number of particles. Need 100 000 000 real particles
     Nx = 50000  # Number of mesh cells Need dx <= 0.01 mkm
     t = 0  # current time of the simulation
-    tEnd = 10  # time at which simulation ends [ns]
+    tEnd = 3  # time at which simulation ends [ns]
     dt = 0.01  # timestep [1ns]
     boxsize = 500  # periodic domain [0,boxsize] [mkm] 1000 mkm
     neff = 100  # number of real particles corresponding to count particles
@@ -266,9 +266,13 @@ def main():
         acc_e = np.delete(acc_e, be_b[0], axis=0)
         be = np.where(pos_e <= 0)
         Ip[i] = -len(be[0])
+        """
         pos_e = np.delete(pos_e, be[0], axis = 0)
         vel_e = np.delete(vel_e, be[0], axis = 0)
         acc_e = np.delete(acc_e, be[0], axis = 0)
+        """
+        pos_e[be[0]] *= -1
+        vel_e[be[0]] *= -1
 
         #pos_i[pos_i >= boxsize] = boxsize - 0.5 * dx # particle death
         bi_b = np.where(pos_i >= boxsize)
@@ -278,9 +282,13 @@ def main():
         acc_i = np.delete(acc_i, bi_b[0], axis=0)
         bi = np.where(pos_i <= 0)
         Ip[i] += len(bi[0])
+        """
         pos_i = np.delete(pos_i, bi[0], axis = 0)
         vel_i = np.delete(vel_i, bi[0], axis=0)
         acc_i = np.delete(acc_i, bi[0], axis=0)
+        """
+        pos_i[bi[0]] *= -1
+        vel_i[bi[0]] *= -1
 
         # capacitor charge and capacity
         q += I[i]
@@ -291,6 +299,7 @@ def main():
         # update time
         t += dt
 
+        """
         # particle generation
         #dNef = Nh * m.sqrt(3 * Te) / 4 / boxsize / m.sqrt(me)
         dNef = vth * N * dt * m.sqrt(3 * Te) / 4 / boxsize
@@ -314,6 +323,7 @@ def main():
         dvel_i = vth * np.random.normal(0, m.sqrt(Ti), size=(dNi, 1))
         vel_e = np.vstack((vel_e, dvel_e))
         vel_i = np.vstack((vel_i, dvel_i))
+        """
 
         # update accelerations
         acc_e, acc_i, n = getAcc(pos_e, pos_i, Nx, boxsize, neff, Gmtx, Laptx, t, Vrf, w, Vdc[i])
