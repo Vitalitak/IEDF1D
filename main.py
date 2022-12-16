@@ -411,7 +411,7 @@ def main():
     # plt.savefig('Vdc-t_Vrf5.png', dpi=240)
     plt.show()
 
-    plt.plot(np.multiply(dt, range(Nt)), Vdc)
+    plt.plot(np.multiply(dt, range(Nt+1)), Vdc)
 
     # Save figure
     plt.xlabel('t')
