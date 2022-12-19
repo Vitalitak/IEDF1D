@@ -292,7 +292,7 @@ def main():
 
         # capacitor charge and capacity
         q += I[i]
-        Vdc[i+1] = q/C
+        Vdc[i+1] = q * neff / C
         #Vdc[i] *= 1.8E-8  # [V] = [Vdc counts/F]*[e C]
         #Vdc[i] *= 0.018080  # [V] = [Vdc counts]*[e C]/[eps0 F/mkm]/[1 m^3]
 
