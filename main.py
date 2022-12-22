@@ -68,9 +68,9 @@ def getAcc(pos_e, pos_i, Nx, boxsize, neff, Gmtx, Laptx, t, Vrf, w, Vdc):
     n -= np.bincount(jp1[:, 0], weights=weight_jp1[:, 0], minlength=Nx+1);
 
     n = np.delete(n, Nx)
-    # zero boundary conditions for Poisson equation
+    # boundary conditions for Poisson equation
     n[0] = 0
-    n[Nx-1] = 0
+    n[Nx-1] = (Vdc - Vrf * np.sin(w * t)) / dx ** 2
 
     #n *= neff * 18080 # [V / mkm^2] = [n counts]*[e C]/[eps0 F/m]/[1E-12 mkm^2/m^2]/[1 m]
     n *= neff * 0.018080 / dx  # [V / mkm^2] = [n counts]*[e C]/[eps0 F/mkm]/[dx mkm]/[1 mkm^2]
@@ -82,18 +82,19 @@ def getAcc(pos_e, pos_i, Nx, boxsize, neff, Gmtx, Laptx, t, Vrf, w, Vdc):
     #Vrf *= 5.53E19  # Vrf = Vrf_volts*eps0*1E12/e
     #Vrf *= 5.53E13  # Vrf = Vrf_volts*eps0*1E6/e
     #Vdc *= 1.8E-8 # [V] = [Vdc counts]*[e C]/[eps0 F/m]//[1 m^3]
-    zerros = []
-    zerros = [0 for index in range(Nx)]
+    #zerros = []
+    #zerros = [0 for index in range(Nx)]
 
     # boundary conditions for Laplace equation: phi_Lap(Nx-1)/dx^2 = zerros[Nx-1]
-    zerros[Nx - 1] = (Vdc - Vrf * np.sin(w * t)) / dx ** 2
+    #zerros[Nx - 1] = (Vdc - Vrf * np.sin(w * t)) / dx ** 2
 
     # Solve Laplace's Equation: laplacian(phi) = 0
-    phi_Lap_grid = spsolve(Laptx, zerros, permc_spec="MMD_AT_PLUS_A")
+    #phi_Lap_grid = spsolve(Laptx, zerros, permc_spec="MMD_AT_PLUS_A")
 
     # Apply Derivative to get the Electric field
     #E_grid = - Gmtx @ phi_grid
-    E_grid = - Gmtx @ (phi_Pois_grid + phi_Lap_grid)
+    #E_grid = - Gmtx @ (phi_Pois_grid + phi_Lap_grid)
+    E_grid = - Gmtx @ phi_Pois_grid
 
     # Interpolate grid value onto particle locations
     #E = weight_j * E_grid[j] + weight_jp1 * E_grid[jp1] # mistake here
@@ -107,13 +108,13 @@ def getAcc(pos_e, pos_i, Nx, boxsize, neff, Gmtx, Laptx, t, Vrf, w, Vdc):
     ae = -Ee * neff / me
     ai = Ei * neff / mi
 
-    # Unit calibration [a mkm/ ns^2] = [a V/mkm/e.m.u.] * [e C] * [1E-6 mkm/m] * [1E-12 mkm/ns^2] / [me kg/e.m.u.]
+    # Unit calibration [a mkm/ ns^2] = [a V/mkm/e.m.u.] * [e C] * [1E-12 mkm/ns^2] / [me kg/e.m.u.]
     #ae = ae * 3.18E-21
     #ai = ai * 3.18E-21
     #ae = ae * 3.18E-15
     #ai = ai * 3.18E-15
-    ae = ae * 1.76E-7
-    ai = ai * 1.76E-7
+    ae = ae * 1.76E-1
+    ai = ai * 1.76E-1
 
     return ae, ai, n
 
@@ -426,7 +427,7 @@ def main():
     # acceleration from coordinate
 
     plt.scatter(pos_e, acc_e, s=.4, color='blue', alpha=0.5)
-    plt.axis([0, boxsize, -5E-1, 5E-1])
+    plt.axis([0, boxsize, -5E4, 5E4])
     plt.xlabel('x')
     plt.ylabel('ae')
     plt.show()
