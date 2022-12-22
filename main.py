@@ -427,7 +427,7 @@ def main():
     # acceleration from coordinate
 
     plt.scatter(pos_e, acc_e, s=.4, color='blue', alpha=0.5)
-    plt.axis([0, boxsize, -5E4, 5E4])
+    plt.axis([0, boxsize, -2.5E4, 2.5E4])
     plt.xlabel('x')
     plt.ylabel('ae')
     plt.show()
