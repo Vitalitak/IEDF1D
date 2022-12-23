@@ -3,6 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.sparse as sp
 from scipy.sparse.linalg import spsolve
+import os
+
 
 """
 Create Your Own Plasma PIC Simulation (With Python)
@@ -39,7 +41,7 @@ def getAcc(pos_e, pos_i, Nx, boxsize, neff, Gmtx, Laptx, t, Vrf, w, Vdc):
     mi = 73000  # ion mass
     me *= neff
     mi *= neff
-    pos = np.vstack((pos_e, pos_i))
+    #pos = np.vstack((pos_e, pos_i))
 
     #N = pos_i.shape[0] - pos_e.shape[0]
     N = pos_i.shape[0]
@@ -133,16 +135,13 @@ def main():
     vth = 1E-3  # m/s to mkm/ns
     Te = 2.3  # electron temperature
     Ti = 0.06  # ion temperature
-    sheath = 0 # initial sheath
     me = 1  # electron mass
     mi = 73000  # ion mass
     Energy_max = 5.0  # max electron energy
     deltaE = 100  # energy discretization
-    Vdc0 = -10 # initial Vdc
-    Vrf = 15  # RF amplitude
     w = 2 * np.pi * 0.01356  # frequency
     C = 1.4E-20  # capacity C = C0[F]/(Selectr/Smodel) Smodel = 1 mkm^2, Selectr = 7.1e10 mkm^2, C0 = 1000 pF
-    plotRealTime = True  # switch on for plotting as the simulation goes along
+    initials = True  # initial condition calculation or plasma parameters
 
     # Generate Initial Conditions
     np.random.seed(42)  # set the random number generator seed
@@ -154,16 +153,30 @@ def main():
     mi *= neff
     C /= 1.6E-19 # [C] = [F/C]
 
-    # Particle creation: position and velocity: mistake Sheath
-    pos_e = np.random.rand(N, 1) * (boxsize - sheath)
-    pos_i = np.random.rand(N, 1) * (boxsize - sheath)
-    #pos = np.vstack((pos_e, pos_i))
+    # Particle creation: position and velocity:
+    if initials:
+        pos_e = np.random.rand(N, 1) * boxsize
+        pos_i = np.random.rand(N, 1) * boxsize
 
-    #vel_e = vth / m.sqrt(Te) * np.random.normal(0, m.sqrt(Te), size = (Nh, 1))
-    #vel_i = vth / m.sqrt(Ti) * np.random.normal(0, m.sqrt(Ti), size = (N-Nh, 1))
-    vel_e = vth * np.random.normal(0, m.sqrt(Te), size=(N, 1))
-    vel_i = vth * np.random.normal(0, m.sqrt(Ti), size=(N, 1))
-    #vel = np.vstack((vel_e, vel_i))
+        vel_e = vth * np.random.normal(0, m.sqrt(Te), size=(N, 1))
+        vel_i = vth * np.random.normal(0, m.sqrt(Ti), size=(N, 1))
+        Vdc0 = -10  # initial Vdc
+        Vrf = 0  # RF amplitude
+    else:
+        pos_e0 = open('./pos_e0.npy')
+        pos_e = np.load(pos_e0)
+        pos_i0 = open('./pos_i0.npy')
+        pos_i = np.load(pos_i0)
+
+        vel_e0 = open('./vel_e0.npy')
+        vel_e = np.load(vel_e0)
+        vel_i0 = open('./vel_i0.npy')
+        vel_i = np.load(vel_i0.npy)
+        Vdc0 = open('./Vdc0.npy')
+        Vdc0 = np.load(Vdc0)
+        Vrf = 15
+
+
 
     # Construct matrix G to computer Gradient  (1st derivative) (BOUNDARY CONDITIONS)
     dx = boxsize / Nx
@@ -181,21 +194,9 @@ def main():
     Gmtx /= (2 * dx)
     Gmtx = sp.csr_matrix(Gmtx)
 
-    """
-    # Construct matrix L to computer Laplacian (2nd derivative) for Poisson
-    diags = np.array([-1, 0, 1])
-    vals = np.vstack((e, -2 * e, e))
-    Lmtx = sp.spdiags(vals, diags, Nx, Nx);
-    Lmtx = sp.lil_matrix(Lmtx)
-    Lmtx[0, Nx - 1] = 1
-    Lmtx[Nx - 1, 0] = 1
-    Lmtx /= dx ** 2
-    Lmtx = sp.csr_matrix(Lmtx)
-    """
 
-    # Construct matrix L to computer Laplacian (2nd derivative) for Laplace (BOUNDARY CONDITIONS)
+    # Construct matrix L to computer Laplacian (2nd derivative) for Poisson equation
     diags = np.array([-1, 0, 1])
-    #diags = np.array([0, 1, 2])
     vals = np.vstack((e, -2 * e, e))
     Laptx = sp.spdiags(vals, diags, Nx, Nx);
     Laptx = sp.lil_matrix(Laptx)
@@ -431,6 +432,16 @@ def main():
     plt.xlabel('x')
     plt.ylabel('ae')
     plt.show()
+
+    # save initial conditions
+    if initials:
+        np.save(os.path.join('.', "pos_e0.npy"), pos_e)
+        np.save(os.path.join('.', "pos_i0.npy"), pos_i)
+        np.save(os.path.join('.', "vel_e0.npy"), vel_e)
+        np.save(os.path.join('.', "vel_i0.npy"), vel_i)
+        np.save(os.path.join('.', "acc_e0.npy"), acc_e)
+        np.save(os.path.join('.', "acc_i0.npy"), acc_i)
+        np.save(os.path.join('.', "Vdc0.npy"), Vdc[Nt+1])
 
     return 0
 
