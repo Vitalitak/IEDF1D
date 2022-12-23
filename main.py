@@ -126,7 +126,7 @@ def main():
     N = 1000000  # Number of particles. Need 100 000 000 real particles
     Nx = 50000  # Number of mesh cells Need dx <= 0.01 mkm
     t = 0  # current time of the simulation
-    tEnd = 10  # time at which simulation ends [ns]
+    tEnd = 100  # time at which simulation ends [ns]
     dt = 0.01  # timestep [1ns]
     boxsize = 500  # periodic domain [0,boxsize] [mkm] 1000 mkm
     neff = 100  # number of real particles corresponding to count particles
@@ -292,7 +292,7 @@ def main():
         vel_i[bi[0]] *= -1
 
         # capacitor charge and capacity
-        q += I[i]*dt
+        q += I[i]
         Vdc[i+1] = q * neff / C
         #Vdc[i] *= 1.8E-8  # [V] = [Vdc counts/F]*[e C]
         #Vdc[i] *= 0.018080  # [V] = [Vdc counts]*[e C]/[eps0 F/mkm]/[1 m^3]
@@ -427,7 +427,7 @@ def main():
     # acceleration from coordinate
 
     plt.scatter(pos_e, acc_e, s=.4, color='blue', alpha=0.5)
-    plt.axis([0, boxsize, -2.5E4, 2.5E4])
+    plt.axis([0, boxsize, -1E4, 1E4])
     plt.xlabel('x')
     plt.ylabel('ae')
     plt.show()
