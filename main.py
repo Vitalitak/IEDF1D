@@ -41,9 +41,7 @@ def getAcc(pos_e, pos_i, Nx, boxsize, neff, Gmtx, Laptx, t, Vrf, w, Vdc):
     mi = 73000  # ion mass
     me *= neff
     mi *= neff
-    #pos = np.vstack((pos_e, pos_i))
 
-    #N = pos_i.shape[0] - pos_e.shape[0]
     N = pos_i.shape[0]
     dx = boxsize / Nx
     j = np.floor(pos_e / dx).astype(int)
@@ -51,18 +49,10 @@ def getAcc(pos_e, pos_i, Nx, boxsize, neff, Gmtx, Laptx, t, Vrf, w, Vdc):
     weight_j = (jp1 * dx - pos_e) / dx
     weight_jp1 = (pos_e - j * dx) / dx
 
-    #jp1[jp1 == Nx] = Nx-1 # particle death
-    #j[j == Nx-1] = Nx-2
-    #jp1 = np.mod(jp1, Nx)  # periodic BC
-
     j_i = np.floor(pos_i / dx).astype(int)
     jp1_i = j_i + 1
     weight_j_i = (jp1_i * dx - pos_i) / dx
     weight_jp1_i = (pos_i - j_i * dx) / dx
-
-    #jp1_i[jp1_i == Nx] = Nx-1 # particle death
-    #j_i[j_i == Nx-1] = Nx - 2
-    #jp1_i = np.mod(jp1_i, Nx)  # periodic BC
 
     n = np.bincount(j_i[:, 0], weights=weight_j_i[:, 0], minlength=Nx+1);
     n += np.bincount(jp1_i[:, 0], weights=weight_jp1_i[:, 0], minlength=Nx+1);
@@ -78,7 +68,6 @@ def getAcc(pos_e, pos_i, Nx, boxsize, neff, Gmtx, Laptx, t, Vrf, w, Vdc):
     n *= neff * 0.018080 / dx  # [V / mkm^2] = [n counts]*[e C]/[eps0 F/mkm]/[dx mkm]/[1 mkm^2]
 
     # Solve Poisson's Equation: laplacian(phi) = -n
-    #phi_Pois_grid = spsolve(Lmtx, n - n0, permc_spec="MMD_AT_PLUS_A")
     phi_Pois_grid = spsolve(Laptx, -n, permc_spec="MMD_AT_PLUS_A")
 
     #Vrf *= 5.53E19  # Vrf = Vrf_volts*eps0*1E12/e
@@ -98,11 +87,11 @@ def getAcc(pos_e, pos_i, Nx, boxsize, neff, Gmtx, Laptx, t, Vrf, w, Vdc):
     #E_grid = - Gmtx @ (phi_Pois_grid + phi_Lap_grid)
     E_grid = - Gmtx @ phi_Pois_grid
 
-    # Interpolate grid value onto particle locations
-    #E = weight_j * E_grid[j] + weight_jp1 * E_grid[jp1] # mistake here
 
     # Boundary electric field
     E_grid = np.hstack((E_grid, 0))
+
+    # Interpolate grid value onto particle locations
 
     Ee = weight_j * E_grid[j] + weight_jp1 * E_grid[jp1]
     Ei = weight_j_i * E_grid[j_i] + weight_jp1_i * E_grid[jp1_i]
@@ -111,10 +100,7 @@ def getAcc(pos_e, pos_i, Nx, boxsize, neff, Gmtx, Laptx, t, Vrf, w, Vdc):
     ai = Ei * neff / mi
 
     # Unit calibration [a mkm/ ns^2] = [a V/mkm/e.m.u.] * [e C] * [1E-12 mkm/ns^2] / [me kg/e.m.u.]
-    #ae = ae * 3.18E-21
-    #ai = ai * 3.18E-21
-    #ae = ae * 3.18E-15
-    #ai = ai * 3.18E-15
+
     ae = ae * 1.76E-1
     ai = ai * 1.76E-1
 
@@ -230,16 +216,6 @@ def main():
         vel_e += acc_e * dt / 2.0
         vel_i += acc_i * dt / 2.0
 
-        # Concentration from coordinate
-        """
-        # plot in real time - color 1/2 particles blue, other half red
-        if plotRealTime or (i == Nt - 1):
-            plt.cla()
-            plt.plot(np.multiply(dx, range(Nx)), n)
-
-            plt.pause(0.001)
-            print(acc_e)
-        """
         # acceleration from coordinate
         """
         # plot in real time - color 1/2 particles blue, other half red
@@ -258,9 +234,7 @@ def main():
         pos_i += vel_i * dt
 
         # boundary condition and particle death
-        #pos = np.mod(pos, boxsize) # periodic boundary condition
 
-        #pos_e[pos_e >= boxsize] = boxsize - 0.5 * dx # particle death
         be_b = np.where(pos_e >= boxsize)
         I[i] = -len(be_b[0])
         pos_e = np.delete(pos_e, be_b[0], axis=0)
@@ -276,7 +250,6 @@ def main():
         pos_e[be[0]] *= -1
         vel_e[be[0]] *= -1
 
-        #pos_i[pos_i >= boxsize] = boxsize - 0.5 * dx # particle death
         bi_b = np.where(pos_i >= boxsize)
         I[i] += len(bi_b[0])
         pos_i = np.delete(pos_i, bi_b[0], axis=0)
