@@ -114,7 +114,7 @@ def main():
     N = 1000000  # Number of particles. Need 100 000 000 real particles
     Nx = 50000  # Number of mesh cells Need dx <= 0.01 mkm
     t = 0  # current time of the simulation
-    tEnd = 1  # time at which simulation ends [ns]
+    tEnd = 10000  # time at which simulation ends [ns]
     dt = 0.01  # timestep [1ns]
     boxsize = 500  # periodic domain [0,boxsize] [mkm] 1000 mkm
     neff = 100  # number of real particles corresponding to count particles
@@ -157,7 +157,7 @@ def main():
         vel_e0 = open('./vel_e0.npy', 'r')
         vel_e = np.load(vel_e0)
         vel_i0 = open('./vel_i0.npy', 'r')
-        vel_i = np.load(vel_i0.npy)
+        vel_i = np.load(vel_i0)
         Vdc0 = open('./Vdc0.npy', 'r')
         Vdc0 = np.load(Vdc0)
         Vrf = 15
