@@ -114,7 +114,7 @@ def main():
     N = 1000000  # Number of particles. Need 100 000 000 real particles
     Nx = 50000  # Number of mesh cells Need dx <= 0.01 mkm
     t = 0  # current time of the simulation
-    tEnd = 10000  # time at which simulation ends [ns]
+    tEnd = 100  # time at which simulation ends [ns]
     dt = 0.01  # timestep [1ns]
     boxsize = 500  # periodic domain [0,boxsize] [mkm] 1000 mkm
     neff = 100  # number of real particles corresponding to count particles
@@ -127,7 +127,7 @@ def main():
     deltaE = 100  # energy discretization
     w = 2 * np.pi * 0.01356  # frequency
     C = 1.4E-20  # capacity C = C0[F]/(Selectr/Smodel) Smodel = 1 mkm^2, Selectr = 7.1e10 mkm^2, C0 = 1000 pF
-    initials = True  # initial condition calculation or plasma parameters
+    initials = False  # initial condition calculation or plasma parameters
 
     # Generate Initial Conditions
     np.random.seed(42)  # set the random number generator seed
@@ -149,17 +149,13 @@ def main():
         Vdc0 = -10  # initial Vdc
         Vrf = 0  # RF amplitude
     else:
-        pos_e0 = open('./pos_e0.npy', 'r')
-        pos_e = np.load(pos_e0)
-        pos_i0 = open('./pos_i0.npy', 'r')
-        pos_i = np.load(pos_i0)
 
-        vel_e0 = open('./vel_e0.npy', 'r')
-        vel_e = np.load(vel_e0)
-        vel_i0 = open('./vel_i0.npy', 'r')
-        vel_i = np.load(vel_i0)
-        Vdc0 = open('./Vdc0.npy', 'r')
-        Vdc0 = np.load(Vdc0)
+        pos_e = np.load('pos_e0.npy')
+        pos_i = np.load('pos_i0.npy')
+
+        vel_e = np.load('vel_e0.npy')
+        vel_i = np.load('vel_i0.npy')
+        Vdc0 = np.load('Vdc0.npy')
         Vrf = 15
 
 
@@ -401,7 +397,7 @@ def main():
     # acceleration from coordinate
 
     plt.scatter(pos_e, acc_e, s=.4, color='blue', alpha=0.5)
-    plt.axis([0, boxsize, -1E4, 1E4])
+    plt.axis([0, boxsize, -1E3, 1E3])
     plt.xlabel('x')
     plt.ylabel('ae')
     plt.show()
