@@ -111,13 +111,15 @@ def main():
     """ Plasma PIC simulation """
 
     # Simulation parameters
-    N = 1000000  # Number of particles. Need 100 000 000 real particles
+    #N = 1000000  # Number of particles. Need 100 000 000 real particles
+    N = 500000  # Number of particles. Need 500 000 real particles. Smodel = 10000 mkm2
     Nx = 50000  # Number of mesh cells Need dx <= 0.01 mkm
     t = 0  # current time of the simulation
-    tEnd = 100  # time at which simulation ends [ns]
+    tEnd = 200  # time at which simulation ends [ns]
     dt = 0.01  # timestep [1ns]
     boxsize = 500  # periodic domain [0,boxsize] [mkm] 1000 mkm
-    neff = 100  # number of real particles corresponding to count particles
+    #neff = 100  # number of real particles corresponding to count particles
+    neff = 1  # number of real particles corresponding to count particles
     vth = 1E-3  # m/s to mkm/ns
     Te = 2.3  # electron temperature
     Ti = 0.06  # ion temperature
@@ -126,8 +128,9 @@ def main():
     Energy_max = 5.0  # max electron energy
     deltaE = 100  # energy discretization
     w = 2 * np.pi * 0.01356  # frequency
-    C = 1.4E-20  # capacity C = C0[F]/(Selectr/Smodel) Smodel = 1 mkm^2, Selectr = 7.1e10 mkm^2, C0 = 1000 pF
-    initials = False  # initial condition calculation or plasma parameters
+    #C = 1.4E-20  # capacity C = C0[F]/(Selectr/Smodel) Smodel = 1 mkm^2, Selectr = 7.1e10 mkm^2, C0 = 1000 pF
+    C = 1.4E-16  # capacity C = C0[F]/(Selectr/Smodel) Smodel = 100 mkm^2, Selectr = 7.1e10 mkm^2, C0 = 1000 pF
+    initials = True  # initial condition calculation or plasma parameters
 
     # Generate Initial Conditions
     np.random.seed(42)  # set the random number generator seed
@@ -402,6 +405,13 @@ def main():
     plt.ylabel('ae')
     plt.show()
 
+    plt.scatter(pos_e, vel_e, s=.4, color='blue', alpha=0.5)
+    plt.axis([0, boxsize, -5E3, 5E3])
+    plt.xlabel('x')
+    plt.ylabel('ve')
+    plt.show()
+
+    """
     # save initial conditions
     if initials:
         np.save(os.path.join('.', "pos_e0.npy"), pos_e)
@@ -411,7 +421,7 @@ def main():
         np.save(os.path.join('.', "acc_e0.npy"), acc_e)
         np.save(os.path.join('.', "acc_i0.npy"), acc_i)
         np.save(os.path.join('.', "Vdc0.npy"), Vdc[Nt])
-
+    """
     return 0
 
 
