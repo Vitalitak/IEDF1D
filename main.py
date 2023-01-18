@@ -115,7 +115,7 @@ def main():
     N = 500000  # Number of particles. Need 500 000 real particles. Smodel = 10000 mkm2
     Nx = 50000  # Number of mesh cells Need dx <= 0.01 mkm
     t = 0  # current time of the simulation
-    tEnd = 1000  # time at which simulation ends [ns]
+    tEnd = 2000  # time at which simulation ends [ns]
     dt = 0.01  # timestep [1ns]
     boxsize = 500  # periodic domain [0,boxsize] [mkm] 1000 mkm
     #neff = 100  # number of real particles corresponding to count particles
@@ -129,7 +129,7 @@ def main():
     deltaE = 100  # energy discretization
     w = 2 * np.pi * 0.01356  # frequency
     #C = 1.4E-20  # capacity C = C0[F]/(Selectr/Smodel) Smodel = 1 mkm^2, Selectr = 7.1e10 mkm^2, C0 = 1000 pF
-    C = 1.4E-16  # capacity C = C0[F]/(Selectr/Smodel) Smodel = 100 mkm^2, Selectr = 7.1e10 mkm^2, C0 = 1000 pF
+    C = 1.4E-16  # capacity C = C0[F]/(Selectr/Smodel) Smodel = 10000 mkm^2, Selectr = 7.1e10 mkm^2, C0 = 1000 pF
     initials = True  # initial condition calculation or plasma parameters
 
     # Generate Initial Conditions
@@ -153,12 +153,12 @@ def main():
         Vrf = 0  # RF amplitude
     else:
 
-        pos_e = np.load('pos_e0.npy')
-        pos_i = np.load('pos_i0.npy')
+        pos_e = np.load('pos_e0_vol.npy')
+        pos_i = np.load('pos_i0_vol.npy')
 
-        vel_e = np.load('vel_e0.npy')
-        vel_i = np.load('vel_i0.npy')
-        Vdc0 = np.load('Vdc0.npy')
+        vel_e = np.load('vel_e0_vol.npy')
+        vel_i = np.load('vel_i0_vol.npy')
+        Vdc0 = np.load('Vdc0_vol.npy')
         Vrf = 15
 
 
@@ -411,16 +411,22 @@ def main():
     plt.ylabel('ve')
     plt.show()
 
+    plt.scatter(pos_i, vel_i, s=.4, color='blue', alpha=0.5)
+    plt.axis([0, boxsize, -1, 1])
+    plt.xlabel('x')
+    plt.ylabel('vi')
+    plt.show()
+
 
     # save initial conditions
     if initials:
-        np.save(os.path.join('.', "pos_e0_vol.npy"), pos_e)
-        np.save(os.path.join('.', "pos_i0_vol.npy"), pos_i)
-        np.save(os.path.join('.', "vel_e0_vol.npy"), vel_e)
-        np.save(os.path.join('.', "vel_i0_vol.npy"), vel_i)
-        np.save(os.path.join('.', "acc_e0_vol.npy"), acc_e)
-        np.save(os.path.join('.', "acc_i0_vol.npy"), acc_i)
-        np.save(os.path.join('.', "Vdc0_vol.npy"), Vdc[Nt])
+        np.save(os.path.join('.', "pos_e0_vol2000.npy"), pos_e)
+        np.save(os.path.join('.', "pos_i0_vol2000.npy"), pos_i)
+        np.save(os.path.join('.', "vel_e0_vol2000.npy"), vel_e)
+        np.save(os.path.join('.', "vel_i0_vol2000.npy"), vel_i)
+        np.save(os.path.join('.', "acc_e0_vol2000.npy"), acc_e)
+        np.save(os.path.join('.', "acc_i0_vol2000.npy"), acc_i)
+        np.save(os.path.join('.', "Vdc0_vol2000.npy"), Vdc[Nt])
 
     return 0
 
