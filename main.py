@@ -115,7 +115,7 @@ def main():
     N = 500000  # Number of particles. Need 500 000 real particles. Smodel = 10000 mkm2
     Nx = 50000  # Number of mesh cells Need dx <= 0.01 mkm
     t = 0  # current time of the simulation
-    tEnd = 2000  # time at which simulation ends [ns]
+    tEnd = 100  # time at which simulation ends [ns]
     dt = 0.01  # timestep [1ns]
     boxsize = 500  # periodic domain [0,boxsize] [mkm] 1000 mkm
     #neff = 100  # number of real particles corresponding to count particles
@@ -241,14 +241,16 @@ def main():
         acc_e = np.delete(acc_e, be_b[0], axis=0)
         be = np.where(pos_e <= 0)
         Ip[i] = -len(be[0])
-        """
+
         pos_e = np.delete(pos_e, be[0], axis = 0)
         vel_e = np.delete(vel_e, be[0], axis = 0)
         acc_e = np.delete(acc_e, be[0], axis = 0)
+
         """
+        # mirror reflection
         pos_e[be[0]] *= -1
         vel_e[be[0]] *= -1
-
+        """
         bi_b = np.where(pos_i >= boxsize)
         I[i] += len(bi_b[0])
         pos_i = np.delete(pos_i, bi_b[0], axis=0)
@@ -256,14 +258,16 @@ def main():
         acc_i = np.delete(acc_i, bi_b[0], axis=0)
         bi = np.where(pos_i <= 0)
         Ip[i] += len(bi[0])
-        """
+
         pos_i = np.delete(pos_i, bi[0], axis = 0)
         vel_i = np.delete(vel_i, bi[0], axis=0)
         acc_i = np.delete(acc_i, bi[0], axis=0)
+
         """
+        # mirror reflection
         pos_i[bi[0]] *= -1
         vel_i[bi[0]] *= -1
-
+        """
         # capacitor charge and capacity
         q += I[i]
         Vdc[i+1] = q * neff / C
@@ -273,7 +277,7 @@ def main():
         # update time
         t += dt
 
-        """
+
         # particle generation
         #dNef = Nh * m.sqrt(3 * Te) / 4 / boxsize / m.sqrt(me)
         dNef = vth * N * dt * m.sqrt(3 * Te) / 4 / boxsize
@@ -286,7 +290,7 @@ def main():
         #dpos_i = np.zeros((dNi, 1))
         #dpos_e = np.random.rand(dNe, 1) * dx
         #dpos_i = np.random.rand(dNi, 1) * dx
-        dpos_e = np.random.rand(dNe, 1) * 10 # length electrons for dt
+        dpos_e = np.random.rand(dNe, 1) * 11 # length electrons for dt
         dpos_i = np.random.rand(dNi, 1) * 0.007 # length ions for dt
         pos_e = np.vstack((pos_e, dpos_e))
         pos_i = np.vstack((pos_i, dpos_i))
@@ -297,7 +301,7 @@ def main():
         dvel_i = vth * np.random.normal(0, m.sqrt(Ti), size=(dNi, 1))
         vel_e = np.vstack((vel_e, dvel_e))
         vel_i = np.vstack((vel_i, dvel_i))
-        """
+
 
         # update accelerations
         acc_e, acc_i, n = getAcc(pos_e, pos_i, Nx, boxsize, neff, Gmtx, Laptx, t, Vrf, w, Vdc[i])
@@ -420,13 +424,13 @@ def main():
 
     # save initial conditions
     if initials:
-        np.save(os.path.join('.', "pos_e0_vol2000.npy"), pos_e)
-        np.save(os.path.join('.', "pos_i0_vol2000.npy"), pos_i)
-        np.save(os.path.join('.', "vel_e0_vol2000.npy"), vel_e)
-        np.save(os.path.join('.', "vel_i0_vol2000.npy"), vel_i)
-        np.save(os.path.join('.', "acc_e0_vol2000.npy"), acc_e)
-        np.save(os.path.join('.', "acc_i0_vol2000.npy"), acc_i)
-        np.save(os.path.join('.', "Vdc0_vol2000.npy"), Vdc[Nt])
+        np.save(os.path.join('.', "pos_e0_flow.npy"), pos_e)
+        np.save(os.path.join('.', "pos_i0_flow.npy"), pos_i)
+        np.save(os.path.join('.', "vel_e0_flow.npy"), vel_e)
+        np.save(os.path.join('.', "vel_i0_flow.npy"), vel_i)
+        np.save(os.path.join('.', "acc_e0_flow.npy"), acc_e)
+        np.save(os.path.join('.', "acc_i0_flow.npy"), acc_i)
+        np.save(os.path.join('.', "Vdc0_flow.npy"), Vdc[Nt])
 
     return 0
 
